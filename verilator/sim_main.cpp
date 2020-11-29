@@ -35,7 +35,7 @@ int main(int argc, char **argv, char **env)
     // Reading file and counting number of lines
     ifstream file;
     string ins;
-    file.open("/home/mbp/Desktop/merl/Ibtida/verilator/instructions.txt");
+    file.open("/home/hadirkhan10/Desktop/Ibtida/verilator/instructions.txt");
     int totalLines = count(istreambuf_iterator<char>(file), istreambuf_iterator<char>(), '\n');
     file.clear();
     file.seekg(0, file.beg);

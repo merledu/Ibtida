@@ -8942,32 +8942,85 @@ module Ibtida_top_dffram_cv(
     .io_dccm_addr_o(ibtidaTop_io_dccm_addr_o),
     .io_dccm_rdata_i(ibtidaTop_io_dccm_rdata_i)
   );
-  InstMem iccm ( // @[Ibtida_top_dffram_cv.scala 15:25]
-    .clock(iccm_clock),
-    .io_we_i_0(iccm_io_we_i_0),
-    .io_we_i_1(iccm_io_we_i_1),
-    .io_we_i_2(iccm_io_we_i_2),
-    .io_we_i_3(iccm_io_we_i_3),
-    .io_addr_i(iccm_io_addr_i),
-    .io_wdata_i(iccm_io_wdata_i),
-    .io_rdata_o(iccm_io_rdata_o)
-  );
-  DataMem dccm ( // @[Ibtida_top_dffram_cv.scala 16:25]
-    .clock(dccm_clock),
-    .io_we_i_0(dccm_io_we_i_0),
-    .io_we_i_1(dccm_io_we_i_1),
-    .io_we_i_2(dccm_io_we_i_2),
-    .io_we_i_3(dccm_io_we_i_3),
-    .io_addr_i(dccm_io_addr_i),
-    .io_wdata_i_0(dccm_io_wdata_i_0),
-    .io_wdata_i_1(dccm_io_wdata_i_1),
-    .io_wdata_i_2(dccm_io_wdata_i_2),
-    .io_wdata_i_3(dccm_io_wdata_i_3),
-    .io_rdata_o_0(dccm_io_rdata_o_0),
-    .io_rdata_o_1(dccm_io_rdata_o_1),
-    .io_rdata_o_2(dccm_io_rdata_o_2),
-    .io_rdata_o_3(dccm_io_rdata_o_3)
-  );
+
+  // dffram for data memory
+
+  reg [31:0] RAM_DCCM[(256*1)-1 : 0];
+  reg [31:0] RAM_DCCM_DATA;
+  wire [3:0] WE_DCCM;
+  wire EN = 1'b1;
+  wire [31:0] DCCM_di;
+  wire [7:0] DCCM_A;
+
+  assign DCCM_A = dccm_io_addr_i;
+  assign DCCM_di = {dccm_io_wdata_i_3, dccm_io_wdata_i_2, dccm_io_wdata_i_1, dccm_io_wdata_i_0};
+  assign WE_DCCM = {dccm_io_we_i_3, dccm_io_we_i_2, dccm_io_we_i_1, dccm_io_we_i_0};
+
+  always @(posedge dccm_clock) begin
+    if(EN) begin
+      RAM_DCCM_DATA <= RAM_DCCM[DCCM_A/4];
+      if(WE_DCCM[0]) RAM_DCCM[DCCM_A/4][ 7: 0] <= DCCM_di[7:0];
+      if(WE_DCCM[1]) RAM_DCCM[DCCM_A/4][15: 8] <= DCCM_di[15:8];
+      if(WE_DCCM[2]) RAM_DCCM[DCCM_A/4][23:16] <= DCCM_di[23:16];
+      if(WE_DCCM[3]) RAM_DCCM[DCCM_A/4][31:24] <= DCCM_di[31:24];
+    end
+  end
+
+  assign dccm_io_rdata_o_3 = RAM_DCCM_DATA[31:24];
+  assign dccm_io_rdata_o_2 = RAM_DCCM_DATA[23:16];
+  assign dccm_io_rdata_o_1 = RAM_DCCM_DATA[15:8];
+  assign dccm_io_rdata_o_0 = RAM_DCCM_DATA[7:0];
+
+
+  // dffram for instruction memory
+  reg [31:0] RAM_ICCM[(256*1)-1 : 0];
+  reg [31:0] RAM_ICCM_DATA;
+  wire [3:0] WE_ICCM;
+  wire [31:0] ICCM_di;
+  wire [7:0] ICCM_A;
+
+  assign ICCM_A = iccm_io_addr_i;
+  assign ICCM_di = iccm_io_wdata_i;
+  assign WE_ICCM = {iccm_io_we_i_3, iccm_io_we_i_2, iccm_io_we_i_1, iccm_io_we_i_0};
+
+  always @(posedge iccm_clock) begin
+    if(EN) begin
+      RAM_ICCM_DATA <= RAM_ICCM[ICCM_A/4];
+      if(WE_ICCM[0]) RAM_ICCM[ICCM_A/4][ 7: 0] <= ICCM_di[7:0];
+      if(WE_ICCM[1]) RAM_ICCM[ICCM_A/4][15: 8] <= ICCM_di[15:8];
+      if(WE_ICCM[2]) RAM_ICCM[ICCM_A/4][23:16] <= ICCM_di[23:16];
+      if(WE_ICCM[3]) RAM_ICCM[ICCM_A/4][31:24] <= ICCM_di[31:24];
+    end
+  end
+
+  assign iccm_io_rdata_o = RAM_ICCM_DATA;
+
+  // InstMem iccm ( // @[Ibtida_top_dffram_cv.scala 15:25]
+  //   .clock(iccm_clock),
+  //   .io_we_i_0(iccm_io_we_i_0),
+  //   .io_we_i_1(iccm_io_we_i_1),
+  //   .io_we_i_2(iccm_io_we_i_2),
+  //   .io_we_i_3(iccm_io_we_i_3),
+  //   .io_addr_i(iccm_io_addr_i),
+  //   .io_wdata_i(iccm_io_wdata_i),
+  //   .io_rdata_o(iccm_io_rdata_o)
+  // );
+  // DataMem dccm ( // @[Ibtida_top_dffram_cv.scala 16:25]
+  //   .clock(dccm_clock),
+  //   .io_we_i_0(dccm_io_we_i_0),
+  //   .io_we_i_1(dccm_io_we_i_1),
+  //   .io_we_i_2(dccm_io_we_i_2),
+  //   .io_we_i_3(dccm_io_we_i_3),
+  //   .io_addr_i(dccm_io_addr_i),
+  //   .io_wdata_i_0(dccm_io_wdata_i_0),
+  //   .io_wdata_i_1(dccm_io_wdata_i_1),
+  //   .io_wdata_i_2(dccm_io_wdata_i_2),
+  //   .io_wdata_i_3(dccm_io_wdata_i_3),
+  //   .io_rdata_o_0(dccm_io_rdata_o_0),
+  //   .io_rdata_o_1(dccm_io_rdata_o_1),
+  //   .io_rdata_o_2(dccm_io_rdata_o_2),
+  //   .io_rdata_o_3(dccm_io_rdata_o_3)
+  // );
   assign io_gpio_o = ibtidaTop_io_gpio_o[29:0]; // @[Ibtida_top_dffram_cv.scala 21:13]
   assign io_gpio_en_o = ibtidaTop_io_gpio_en_o[29:0]; // @[Ibtida_top_dffram_cv.scala 22:16]
   assign ibtidaTop_clock = clock;
