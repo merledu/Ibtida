@@ -98,9 +98,9 @@ end // initial
     end else if (_T_1) begin
       cntReg <= _T_3;
     end else if (_T_4) begin
-      cntReg <= 20'h2;
+      cntReg <= 20'h340;
     end else if (_T_10) begin
-      cntReg <= 20'h4;
+      cntReg <= 20'h4e1;
     end
     if (reset) begin
       bitsReg <= 4'h0;
@@ -8121,14 +8121,14 @@ module Ibtida_top(
   reg [31:0] _RAND_2;
   reg [31:0] _RAND_3;
 `endif // RANDOMIZE_REG_INIT
-  wire  uart_ctrl_clock; // @[Ibtida_top.scala 30:51]
-  wire  uart_ctrl_reset; // @[Ibtida_top.scala 30:51]
-  wire  uart_ctrl_io_isStalled; // @[Ibtida_top.scala 30:51]
-  wire [31:0] uart_ctrl_io_rx_data_o; // @[Ibtida_top.scala 30:51]
-  wire [13:0] uart_ctrl_io_addr_o; // @[Ibtida_top.scala 30:51]
-  wire  uart_ctrl_io_rxd; // @[Ibtida_top.scala 30:51]
-  wire  uart_ctrl_io_valid; // @[Ibtida_top.scala 30:51]
-  wire  uart_ctrl_io_done; // @[Ibtida_top.scala 30:51]
+  wire  uart_ctrl_clock; // @[Ibtida_top.scala 29:25]
+  wire  uart_ctrl_reset; // @[Ibtida_top.scala 29:25]
+  wire  uart_ctrl_io_isStalled; // @[Ibtida_top.scala 29:25]
+  wire [31:0] uart_ctrl_io_rx_data_o; // @[Ibtida_top.scala 29:25]
+  wire [13:0] uart_ctrl_io_addr_o; // @[Ibtida_top.scala 29:25]
+  wire  uart_ctrl_io_rxd; // @[Ibtida_top.scala 29:25]
+  wire  uart_ctrl_io_valid; // @[Ibtida_top.scala 29:25]
+  wire  uart_ctrl_io_done; // @[Ibtida_top.scala 29:25]
   wire  core_clock; // @[Ibtida_top.scala 31:51]
   wire  core_reset; // @[Ibtida_top.scala 31:51]
   wire  core_io_data_gnt_i; // @[Ibtida_top.scala 31:51]
@@ -8280,7 +8280,7 @@ module Ibtida_top(
   wire [1:0] _T_26 = {core_io_data_be_o_1,core_io_data_be_o_0}; // @[Cat.scala 29:58]
   wire [1:0] _T_27 = {core_io_data_be_o_3,core_io_data_be_o_2}; // @[Cat.scala 29:58]
   wire [3:0] _T_35 = {io_dccm_rdata_i[3],io_dccm_rdata_i[2],io_dccm_rdata_i[1],io_dccm_rdata_i[0]}; // @[Cat.scala 29:58]
-  UartController uart_ctrl ( // @[Ibtida_top.scala 30:51]
+  UartController uart_ctrl ( // @[Ibtida_top.scala 29:25]
     .clock(uart_ctrl_clock),
     .reset(uart_ctrl_reset),
     .io_isStalled(uart_ctrl_io_isStalled),
