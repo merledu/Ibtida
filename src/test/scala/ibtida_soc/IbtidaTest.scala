@@ -1,11 +1,11 @@
-package shaheen_soc
+package ibtida_soc
 import scala.io.Source
 import chisel3._
 import chisel3.iotesters.Driver.execute
 import chisel3.iotesters._
 import merl.uit.tilelink.TLConfiguration
 
-class ShaheenTest(c: ShaheenTop, filePath: String) extends PeekPokeTester(c) {
+class IbtidaTest(c: Ibtida_top_dffram_cv, filePath: String) extends PeekPokeTester(c) {
   /** Initializing GPIO input pins */
  // poke(c.io.gpio_i, 0xffffffff)
   val bufferedSource =  Source.fromFile(filePath)
@@ -61,8 +61,8 @@ class ShaheenTest(c: ShaheenTop, filePath: String) extends PeekPokeTester(c) {
   step(300)
 }
 
-object ShaheenTestDriver extends App {
+object IbtidaTestDriver extends App {
   implicit val conf = TLConfiguration()
 //  Driver(() => new ShaheenTop) {c => new ShaheenTest(c)}
-  execute(Array("--generate-vcd-output", "on"), () => new ShaheenTop()) {c => new ShaheenTest(c, "/home/merl/Desktop/mem.txt")}
+  execute(Array("--generate-vcd-output", "on"), () => new Ibtida_top_dffram_cv()) { c => new IbtidaTest(c, "/Users/mbp/Desktop/instructions.txt")}
 }

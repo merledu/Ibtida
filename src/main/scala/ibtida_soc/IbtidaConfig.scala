@@ -1,4 +1,4 @@
-package shaheen_soc
+package ibtida_soc
 import chisel3._
 
 import scala.collection.immutable.Map
