@@ -26,8 +26,8 @@ class Ibtida_top(implicit val conf: TLConfiguration) extends Module {
     val dccm_rdata_i = Input(UInt(32.W))
   })
 
-  //val uart_ctrl = Module(new UartController(8000000, 9600))
-  val uart_ctrl                     =       Module(new UartController(10000, 3000))
+  val uart_ctrl = Module(new UartController(8000000, 9600))
+  //val uart_ctrl                     =       Module(new UartController(10000, 3000))
   val core                          =       Module(new Core())
   //val iccm                          =       Module(new InstMem())
   //val dccm                          =       Module(new DataMem())
