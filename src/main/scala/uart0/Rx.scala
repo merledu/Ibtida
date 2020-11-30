@@ -1,45 +1,95 @@
 package uart0
+
 import chisel3._
 import chisel3.util._
+import chisel3.dontTouch
 
-class Channel extends Bundle {
-  val data = Input(Bits (8.W))
-  val valid = Input(Bool ())
-}
-
-class Rx( frequency : Int , baudRate: Int) extends Module {
+class Rx extends Module {
   val io = IO(new Bundle {
-    val rxd = Input(Bits (1.W))
-    val channel = Flipped(new Channel ())
+    val CLK_PER_BIT = Input(UInt(16.W))
+    val rxd = Input(Bits(1.W))
+    val valid = Output(Bool())
+    val data = Output(Bits(8.W))
   })
-  val BIT_CNT = (( frequency + baudRate / 2) / baudRate - 1).U
-  val START_CNT = ((3 * frequency / 2 + baudRate / 2) /
-    baudRate - 1).U
-  // Sync in the asynchronous RX data
-  // Reset to 1 to not start reading after a reset
-  val rxReg = RegNext(RegNext(io.rxd , 1.U), 1.U)
+
+  val CLCK_PER_BIT = dontTouch(Wire(UInt(32.W)))
+  CLCK_PER_BIT := io.CLK_PER_BIT
+
+  val idle :: start :: data :: stop :: cleanup :: Nil = Enum(5)
+  val stateReg = RegInit(idle)
+
+  val clockCount = RegInit(0.U(8.W))
+  val bitIndex = RegInit(0.U(4.W))
+  val validReg = RegInit(0.U(1.W))
+  //val dataReg = RegInit(VecInit(Seq.fill(8)(0.U(1.W))))
+  val rxReg = RegNext(RegNext(io.rxd, 1.U), 1.U)
   val shiftReg = RegInit('A'.U(8.W))
-  val cntReg = RegInit (0.U(20.W))
-  val bitsReg = RegInit (0.U(4.W))
-  val valReg = RegInit(false.B)
-  when(cntReg =/= 0.U) {
-    cntReg := cntReg - 1.U
-  }. elsewhen (bitsReg =/= 0.U) {
-    cntReg := BIT_CNT
-    shiftReg := Cat(rxReg , shiftReg >> 1)
-    bitsReg := bitsReg - 1.U
-    // the last shifted in
-    when(bitsReg === 1.U) {
-      valReg := true.B
+
+  switch(stateReg) {
+    is(idle) {
+      validReg := 0.U
+      clockCount := 0.U
+      bitIndex := 0.U
+
+      when(io.rxd === 0.U) {
+        stateReg := start
+      }.otherwise {
+        stateReg := idle
+      }
     }
-    // wait 1.5 bits after falling edge of start
-  }. elsewhen (rxReg === 0.U) {
-    cntReg := START_CNT
-    bitsReg := 8.U
+
+    is(start) {
+      when(clockCount === ((CLCK_PER_BIT - 1.U) / 2.U)) {
+        when(io.rxd === 0.U) {
+          clockCount := 0.U
+          stateReg := data
+        }.otherwise {
+          stateReg := idle
+        }
+      }.otherwise {
+        clockCount := clockCount + 1.U
+        stateReg := start
+      }
+    }
+
+    is(data) {
+      when(clockCount < (CLCK_PER_BIT - 1.U)) {
+        clockCount := clockCount + 1.U
+        stateReg := data
+      }.otherwise {
+        clockCount := 0.U
+        shiftReg := Cat(rxReg, shiftReg >> 1)
+        //dataReg(bitIndex) := io.rxd
+
+        when(bitIndex < 7.U) {
+          bitIndex := bitIndex + 1.U
+          stateReg := data
+        }.otherwise {
+          bitIndex := 0.U
+          stateReg := stop
+        }
+      }
+    }
+
+    is(stop) {
+      when(clockCount < (CLCK_PER_BIT - 1.U)) {
+        clockCount := clockCount + 1.U
+        stateReg := stop
+      }.otherwise {
+        validReg := 1.U
+        clockCount := 0.U
+        stateReg := cleanup
+      }
+    }
+
+    is(cleanup) {
+      stateReg := idle
+      validReg := 0.U
+    }
   }
-  when(valReg) {
-    valReg := false.B
-  }
-  io.channel.data := shiftReg
-  io.channel.valid := valReg
+
+  io.data := shiftReg
+  //io.data := dataReg.asUInt()
+  io.valid := validReg
+
 }
