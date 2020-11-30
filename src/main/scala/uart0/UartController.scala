@@ -1,24 +1,18 @@
 package uart0
+
 import chisel3._
 import chisel3.util._
 
-class UartController(frequency: Int, baudRate: Int) extends Module {
+class UartController extends Module {
   val io = IO(new Bundle {
-    /**
-     * isStalled input is coming in from the soc telling whether the core is stalled or not.
-     * When this signal is true it means the core is stalled and we need to start the UART communication. */
     val isStalled = Input(Bool())
 
     val rx_data_o = Output(UInt(32.W))
-    val addr_o = Output(UInt(14.W))
+    val addr_o = Output(UInt(8.W))
+    val CLK_PER_BIT = Input(UInt(16.W))
     val rxd = Input(UInt(1.W))
 
     val valid = Output(Bool())
-
-    /**
-     * done is the control signal which is attached with FetchBusController.
-     * It tells the FetchBusController that the UART is done writing to memory
-     * On the basis of this signal the FetchBusController will remove the stall.*/
     val done = Output(Bool())
   })
 
@@ -28,7 +22,9 @@ class UartController(frequency: Int, baudRate: Int) extends Module {
   val regAddr = RegInit(16383.U(14.W))
   val regValid = RegInit(false.B)
 
-  val rx = Module(new Rx(frequency, baudRate))
+  val rx = Module(new Rx)
+
+  rx.io.CLK_PER_BIT := io.CLK_PER_BIT
   rx.io.rxd := io.rxd
 
   val dataReg = RegInit(0.U(8.W))
@@ -38,10 +34,10 @@ class UartController(frequency: Int, baudRate: Int) extends Module {
   val regMSB2 = RegInit(0.U(8.W))
 
   when(io.isStalled && !regDone) {
-    when(rx.io.channel.valid === 1.U) {
+    when(rx.io.valid === 1.U) {
       // We get 1 byte of data from the Rx module
       // dataReg := rx.io.channel.bits
-      dataReg := rx.io.channel.data
+      dataReg := rx.io.data
       count := count + 1.U
       regValid := false.B
     }
@@ -64,7 +60,7 @@ class UartController(frequency: Int, baudRate: Int) extends Module {
         regFinalData := 0.U
         regAddr := 0.U
         regValid := false.B
-      } .otherwise {
+      }.otherwise {
         regFinalData := data
         regAddr := regAddr + 1.U
         regValid := true.B
@@ -80,31 +76,6 @@ class UartController(frequency: Int, baudRate: Int) extends Module {
   io.addr_o := regAddr
   io.rx_data_o := regFinalData
   io.valid := regValid
-
-  //  val mi = Module(new MasterInterface(sourceId = 3.U, forFetch = false))
-  //  mi.io.memRd := 0.U
-  //  mi.io.memWrt := 1.U
-  //  mi.io.addr_in := regAddr
-  //  mi.io.data_in := regFinalData
-  //
-  //  io.masterInterfaceIO.a_address := mi.io.a_address
-  //  io.masterInterfaceIO.a_data := mi.io.a_data
-  //  io.masterInterfaceIO.a_opcode := mi.io.a_opcode
-  //  io.masterInterfaceIO.a_source := mi.io.a_source
-  //  io.masterInterfaceIO.a_valid := mi.io.a_valid
-  //
-  //  mi.io.d_data := io.masterInterfaceIO.d_data
-  //  mi.io.d_denied := io.masterInterfaceIO.d_denied
-  //  mi.io.d_opcode := io.masterInterfaceIO.d_opcode
-  //  mi.io.d_valid := io.masterInterfaceIO.d_valid
-  //  mi.io.d_source := io.masterInterfaceIO.d_source
-
-
-
-
-  //  io.addr := regAddr
-  //  io.finalData := regFinalData
-  //  io.en := regEn
   io.done := regDone
 
 }

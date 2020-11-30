@@ -8,6 +8,7 @@ import merl.uit.tilelink.TLConfiguration
 class IbtidaTest(c: Ibtida_top_dffram_cv, filePath: String) extends PeekPokeTester(c) {
   /** Initializing GPIO input pins */
  // poke(c.io.gpio_i, 0xffffffff)
+ poke(c.io.CLK_PER_BIT, 4.U)
   val bufferedSource =  Source.fromFile(filePath)
   val fileData = bufferedSource.getLines.toArray
   // We create an array insts by reading the lines from the text file and parsing the string
@@ -19,7 +20,7 @@ class IbtidaTest(c: Ibtida_top_dffram_cv, filePath: String) extends PeekPokeTest
   bufferedSource.close
 
   poke(c.io.rx_i, 1)
-  //step(10)
+  step(10)
   for (inst <- insts) {
     val half_byte1 = inst & 0x0f  // 3
     val half_byte2 = (inst & 0xf0) >> 4 // 1
@@ -48,17 +49,17 @@ class IbtidaTest(c: Ibtida_top_dffram_cv, filePath: String) extends PeekPokeTest
 
     // start bit
     poke(c.io.rx_i, 0)
-    step(3)
+    step(4)
     // 8 data bits
     for (i <- 0 until 8) {
       poke(c.io.rx_i, (value >> i) & 0x01)
-      step(3)
+      step(4)
     }
     // stop bit
     poke(c.io.rx_i, 1)
-    step(2)
+    step(4)
   }
-  step(300)
+  step(200)
 }
 
 object IbtidaTestDriver extends App {

@@ -11,6 +11,7 @@ import uart0.UartController
 class Ibtida_top(implicit val conf: TLConfiguration) extends Module {
   val io = IO(new Bundle {
     val rx_i      =     Input(UInt(1.W))
+    val CLK_PER_BIT = Input(UInt(16.W))
     val gpio_i    =     Input(UInt(32.W))
     val gpio_o    =     Output(UInt(32.W))
     val gpio_en_o =     Output(UInt(32.W))
@@ -26,7 +27,8 @@ class Ibtida_top(implicit val conf: TLConfiguration) extends Module {
     val dccm_rdata_i = Input(UInt(32.W))
   })
 
-  val uart_ctrl = Module(new UartController(8000000, 9600))
+  val uart_ctrl = Module(new UartController)
+  uart_ctrl.io.CLK_PER_BIT := io.CLK_PER_BIT
   //val uart_ctrl                     =       Module(new UartController(10000, 3000))
   val core                          =       Module(new Core())
   //val iccm                          =       Module(new InstMem())

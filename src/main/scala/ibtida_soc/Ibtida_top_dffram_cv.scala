@@ -6,6 +6,7 @@ import primitives.{DataMem, InstMem}
 class Ibtida_top_dffram_cv(implicit val conf: TLConfiguration) extends Module {
   val io = IO(new Bundle {
     val rx_i = Input(UInt(1.W))
+    val CLK_PER_BIT = Input(UInt(16.W))
     val gpio_i = Input(UInt(30.W))  // 30 io pads being used for gpio in caravel
     val gpio_o = Output(UInt(30.W)) // 30 io pads being used for gpio in caravel
     val gpio_en_o = Output(UInt(30.W))  // 30 io pads being used for gpio in caravel
@@ -17,6 +18,7 @@ class Ibtida_top_dffram_cv(implicit val conf: TLConfiguration) extends Module {
 
   // initialising ibtida top
   ibtidaTop.io.rx_i := io.rx_i
+  ibtidaTop.io.CLK_PER_BIT := io.CLK_PER_BIT
   ibtidaTop.io.gpio_i := io.gpio_i
   io.gpio_o := ibtidaTop.io.gpio_o(29,0)
   io.gpio_en_o := ibtidaTop.io.gpio_en_o(29,0)
