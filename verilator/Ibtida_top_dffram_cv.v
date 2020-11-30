@@ -1,9 +1,10 @@
 module Rx(
-  input        clock,
-  input        reset,
-  input        io_rxd,
-  output [7:0] io_channel_data,
-  output       io_channel_valid
+  input         clock,
+  input         reset,
+  input  [15:0] io_CLK_PER_BIT,
+  input         io_rxd,
+  output        io_valid,
+  output [7:0]  io_data
 );
 `ifdef RANDOMIZE_REG_INIT
   reg [31:0] _RAND_0;
@@ -12,23 +13,33 @@ module Rx(
   reg [31:0] _RAND_3;
   reg [31:0] _RAND_4;
   reg [31:0] _RAND_5;
+  reg [31:0] _RAND_6;
 `endif // RANDOMIZE_REG_INIT
-  reg  _T; // @[Rx.scala 20:30]
-  reg  rxReg; // @[Rx.scala 20:22]
-  reg [7:0] shiftReg; // @[Rx.scala 21:25]
-  reg [19:0] cntReg; // @[Rx.scala 22:24]
-  reg [3:0] bitsReg; // @[Rx.scala 23:25]
-  reg  valReg; // @[Rx.scala 24:23]
-  wire  _T_1 = cntReg != 20'h0; // @[Rx.scala 25:15]
-  wire [19:0] _T_3 = cntReg - 20'h1; // @[Rx.scala 26:22]
-  wire  _T_4 = bitsReg != 4'h0; // @[Rx.scala 27:24]
-  wire [7:0] _T_6 = {rxReg,shiftReg[7:1]}; // @[Cat.scala 29:58]
-  wire [3:0] _T_8 = bitsReg - 4'h1; // @[Rx.scala 30:24]
-  wire  _T_9 = bitsReg == 4'h1; // @[Rx.scala 32:18]
-  wire  _GEN_0 = _T_9 | valReg; // @[Rx.scala 32:27]
-  wire  _T_10 = ~rxReg; // @[Rx.scala 36:22]
-  assign io_channel_data = shiftReg; // @[Rx.scala 43:19]
-  assign io_channel_valid = valReg; // @[Rx.scala 44:20]
+  reg [2:0] stateReg; // @[Rx.scala 19:25]
+  reg [7:0] clockCount; // @[Rx.scala 21:27]
+  reg [3:0] bitIndex; // @[Rx.scala 22:25]
+  reg  validReg; // @[Rx.scala 23:25]
+  reg  _T; // @[Rx.scala 25:30]
+  reg  rxReg; // @[Rx.scala 25:22]
+  reg [7:0] shiftReg; // @[Rx.scala 26:25]
+  wire  _T_1 = 3'h0 == stateReg; // @[Conditional.scala 37:30]
+  wire  _T_2 = ~io_rxd; // @[Rx.scala 34:19]
+  wire  _T_3 = 3'h1 == stateReg; // @[Conditional.scala 37:30]
+  wire [31:0] CLCK_PER_BIT = {{16'd0}, io_CLK_PER_BIT}; // @[Rx.scala 15:36 Rx.scala 16:16]
+  wire [31:0] _T_5 = CLCK_PER_BIT - 32'h1; // @[Rx.scala 42:42]
+  wire [31:0] _T_6 = _T_5 / 32'h2; // @[Rx.scala 42:49]
+  wire [31:0] _GEN_34 = {{24'd0}, clockCount}; // @[Rx.scala 42:23]
+  wire  _T_7 = _GEN_34 == _T_6; // @[Rx.scala 42:23]
+  wire [7:0] _T_10 = clockCount + 8'h1; // @[Rx.scala 50:34]
+  wire  _T_11 = 3'h2 == stateReg; // @[Conditional.scala 37:30]
+  wire  _T_14 = _GEN_34 < _T_5; // @[Rx.scala 56:23]
+  wire [7:0] _T_18 = {rxReg,shiftReg[7:1]}; // @[Cat.scala 29:58]
+  wire  _T_19 = bitIndex < 4'h7; // @[Rx.scala 64:23]
+  wire [3:0] _T_21 = bitIndex + 4'h1; // @[Rx.scala 65:32]
+  wire  _T_22 = 3'h3 == stateReg; // @[Conditional.scala 37:30]
+  wire  _T_28 = 3'h4 == stateReg; // @[Conditional.scala 37:30]
+  assign io_valid = validReg; // @[Rx.scala 93:12]
+  assign io_data = shiftReg; // @[Rx.scala 91:11]
 `ifdef RANDOMIZE_GARBAGE_ASSIGN
 `define RANDOMIZE
 `endif
@@ -65,17 +76,19 @@ initial begin
     `endif
 `ifdef RANDOMIZE_REG_INIT
   _RAND_0 = {1{`RANDOM}};
-  _T = _RAND_0[0:0];
+  stateReg = _RAND_0[2:0];
   _RAND_1 = {1{`RANDOM}};
-  rxReg = _RAND_1[0:0];
+  clockCount = _RAND_1[7:0];
   _RAND_2 = {1{`RANDOM}};
-  shiftReg = _RAND_2[7:0];
+  bitIndex = _RAND_2[3:0];
   _RAND_3 = {1{`RANDOM}};
-  cntReg = _RAND_3[19:0];
+  validReg = _RAND_3[0:0];
   _RAND_4 = {1{`RANDOM}};
-  bitsReg = _RAND_4[3:0];
+  _T = _RAND_4[0:0];
   _RAND_5 = {1{`RANDOM}};
-  valReg = _RAND_5[0:0];
+  rxReg = _RAND_5[0:0];
+  _RAND_6 = {1{`RANDOM}};
+  shiftReg = _RAND_6[7:0];
 `endif // RANDOMIZE_REG_INIT
   `endif // RANDOMIZE
 end // initial
@@ -84,40 +97,107 @@ end // initial
 `endif
 `endif // SYNTHESIS
   always @(posedge clock) begin
+    if (reset) begin
+      stateReg <= 3'h0;
+    end else if (_T_1) begin
+      if (_T_2) begin
+        stateReg <= 3'h1;
+      end else begin
+        stateReg <= 3'h0;
+      end
+    end else if (_T_3) begin
+      if (_T_7) begin
+        if (_T_2) begin
+          stateReg <= 3'h2;
+        end else begin
+          stateReg <= 3'h0;
+        end
+      end else begin
+        stateReg <= 3'h1;
+      end
+    end else if (_T_11) begin
+      if (_T_14) begin
+        stateReg <= 3'h2;
+      end else if (_T_19) begin
+        stateReg <= 3'h2;
+      end else begin
+        stateReg <= 3'h3;
+      end
+    end else if (_T_22) begin
+      if (_T_14) begin
+        stateReg <= 3'h3;
+      end else begin
+        stateReg <= 3'h4;
+      end
+    end else if (_T_28) begin
+      stateReg <= 3'h0;
+    end
+    if (reset) begin
+      clockCount <= 8'h0;
+    end else if (_T_1) begin
+      clockCount <= 8'h0;
+    end else if (_T_3) begin
+      if (_T_7) begin
+        if (_T_2) begin
+          clockCount <= 8'h0;
+        end
+      end else begin
+        clockCount <= _T_10;
+      end
+    end else if (_T_11) begin
+      if (_T_14) begin
+        clockCount <= _T_10;
+      end else begin
+        clockCount <= 8'h0;
+      end
+    end else if (_T_22) begin
+      if (_T_14) begin
+        clockCount <= _T_10;
+      end else begin
+        clockCount <= 8'h0;
+      end
+    end
+    if (reset) begin
+      bitIndex <= 4'h0;
+    end else if (_T_1) begin
+      bitIndex <= 4'h0;
+    end else if (!(_T_3)) begin
+      if (_T_11) begin
+        if (!(_T_14)) begin
+          if (_T_19) begin
+            bitIndex <= _T_21;
+          end else begin
+            bitIndex <= 4'h0;
+          end
+        end
+      end
+    end
+    if (reset) begin
+      validReg <= 1'h0;
+    end else if (_T_1) begin
+      validReg <= 1'h0;
+    end else if (!(_T_3)) begin
+      if (!(_T_11)) begin
+        if (_T_22) begin
+          if (!(_T_14)) begin
+            validReg <= 1'h1;
+          end
+        end else if (_T_28) begin
+          validReg <= 1'h0;
+        end
+      end
+    end
     _T <= reset | io_rxd;
     rxReg <= reset | _T;
     if (reset) begin
       shiftReg <= 8'h41;
     end else if (!(_T_1)) begin
-      if (_T_4) begin
-        shiftReg <= _T_6;
-      end
-    end
-    if (reset) begin
-      cntReg <= 20'h0;
-    end else if (_T_1) begin
-      cntReg <= _T_3;
-    end else if (_T_4) begin
-      cntReg <= 20'h340;
-    end else if (_T_10) begin
-      cntReg <= 20'h4e1;
-    end
-    if (reset) begin
-      bitsReg <= 4'h0;
-    end else if (!(_T_1)) begin
-      if (_T_4) begin
-        bitsReg <= _T_8;
-      end else if (_T_10) begin
-        bitsReg <= 4'h8;
-      end
-    end
-    if (reset) begin
-      valReg <= 1'h0;
-    end else if (valReg) begin
-      valReg <= 1'h0;
-    end else if (!(_T_1)) begin
-      if (_T_4) begin
-        valReg <= _GEN_0;
+      if (!(_T_3)) begin
+        if (_T_11) begin
+          if (!(_T_14)) begin
+            shiftReg <= _T_18;
+          end
+        end
       end
     end
   end
@@ -127,7 +207,8 @@ module UartController(
   input         reset,
   input         io_isStalled,
   output [31:0] io_rx_data_o,
-  output [13:0] io_addr_o,
+  output [7:0]  io_addr_o,
+  input  [15:0] io_CLK_PER_BIT,
   input         io_rxd,
   output        io_valid,
   output        io_done
@@ -143,47 +224,50 @@ module UartController(
   reg [31:0] _RAND_7;
   reg [31:0] _RAND_8;
 `endif // RANDOMIZE_REG_INIT
-  wire  rx_clock; // @[UartController.scala 31:18]
-  wire  rx_reset; // @[UartController.scala 31:18]
-  wire  rx_io_rxd; // @[UartController.scala 31:18]
-  wire [7:0] rx_io_channel_data; // @[UartController.scala 31:18]
-  wire  rx_io_channel_valid; // @[UartController.scala 31:18]
-  reg  regDone; // @[UartController.scala 25:24]
-  reg [2:0] count; // @[UartController.scala 26:22]
-  reg [31:0] regFinalData; // @[UartController.scala 27:29]
-  reg [13:0] regAddr; // @[UartController.scala 28:24]
-  reg  regValid; // @[UartController.scala 29:25]
-  reg [7:0] dataReg; // @[UartController.scala 34:24]
-  reg [7:0] regLSB1; // @[UartController.scala 35:24]
-  reg [7:0] regLSB2; // @[UartController.scala 36:24]
-  reg [7:0] regMSB1; // @[UartController.scala 37:24]
-  wire  _T = ~regDone; // @[UartController.scala 40:24]
-  wire  _T_1 = io_isStalled & _T; // @[UartController.scala 40:21]
-  wire  _T_2 = rx_io_channel_valid; // @[UartController.scala 41:30]
-  wire [2:0] _T_4 = count + 3'h1; // @[UartController.scala 45:22]
+  wire  rx_clock; // @[UartController.scala 25:18]
+  wire  rx_reset; // @[UartController.scala 25:18]
+  wire [15:0] rx_io_CLK_PER_BIT; // @[UartController.scala 25:18]
+  wire  rx_io_rxd; // @[UartController.scala 25:18]
+  wire  rx_io_valid; // @[UartController.scala 25:18]
+  wire [7:0] rx_io_data; // @[UartController.scala 25:18]
+  reg  regDone; // @[UartController.scala 19:24]
+  reg [2:0] count; // @[UartController.scala 20:22]
+  reg [31:0] regFinalData; // @[UartController.scala 21:29]
+  reg [13:0] regAddr; // @[UartController.scala 22:24]
+  reg  regValid; // @[UartController.scala 23:25]
+  reg [7:0] dataReg; // @[UartController.scala 30:24]
+  reg [7:0] regLSB1; // @[UartController.scala 31:24]
+  reg [7:0] regLSB2; // @[UartController.scala 32:24]
+  reg [7:0] regMSB1; // @[UartController.scala 33:24]
+  wire  _T = ~regDone; // @[UartController.scala 36:24]
+  wire  _T_1 = io_isStalled & _T; // @[UartController.scala 36:21]
+  wire  _T_2 = rx_io_valid; // @[UartController.scala 37:22]
+  wire [2:0] _T_4 = count + 3'h1; // @[UartController.scala 41:22]
   wire  _T_5 = 3'h1 == count; // @[Conditional.scala 37:30]
   wire  _T_6 = 3'h2 == count; // @[Conditional.scala 37:30]
   wire  _T_7 = 3'h3 == count; // @[Conditional.scala 37:30]
   wire  _T_8 = 3'h4 == count; // @[Conditional.scala 37:30]
   wire [31:0] _T_11 = {dataReg,regMSB1,regLSB2,regLSB1}; // @[Cat.scala 29:58]
-  wire  _T_12 = _T_11 == 32'hfff; // @[UartController.scala 62:17]
-  wire [13:0] _T_14 = regAddr + 14'h1; // @[UartController.scala 69:28]
-  wire  _GEN_6 = _T_12 | regDone; // @[UartController.scala 62:36]
-  wire  _T_15 = count == 3'h4; // @[UartController.scala 76:14]
-  Rx rx ( // @[UartController.scala 31:18]
+  wire  _T_12 = _T_11 == 32'hfff; // @[UartController.scala 58:17]
+  wire [13:0] _T_14 = regAddr + 14'h1; // @[UartController.scala 65:28]
+  wire  _GEN_6 = _T_12 | regDone; // @[UartController.scala 58:36]
+  wire  _T_15 = count == 3'h4; // @[UartController.scala 72:14]
+  Rx rx ( // @[UartController.scala 25:18]
     .clock(rx_clock),
     .reset(rx_reset),
+    .io_CLK_PER_BIT(rx_io_CLK_PER_BIT),
     .io_rxd(rx_io_rxd),
-    .io_channel_data(rx_io_channel_data),
-    .io_channel_valid(rx_io_channel_valid)
+    .io_valid(rx_io_valid),
+    .io_data(rx_io_data)
   );
-  assign io_rx_data_o = regFinalData; // @[UartController.scala 81:16]
-  assign io_addr_o = regAddr; // @[UartController.scala 80:13]
-  assign io_valid = regValid; // @[UartController.scala 82:12]
-  assign io_done = regDone; // @[UartController.scala 108:11]
+  assign io_rx_data_o = regFinalData; // @[UartController.scala 77:16]
+  assign io_addr_o = regAddr[7:0]; // @[UartController.scala 76:13]
+  assign io_valid = regValid; // @[UartController.scala 78:12]
+  assign io_done = regDone; // @[UartController.scala 79:11]
   assign rx_clock = clock;
   assign rx_reset = reset;
-  assign rx_io_rxd = io_rxd; // @[UartController.scala 32:13]
+  assign rx_io_CLK_PER_BIT = io_CLK_PER_BIT; // @[UartController.scala 27:21]
+  assign rx_io_rxd = io_rxd; // @[UartController.scala 28:13]
 `ifdef RANDOMIZE_GARBAGE_ASSIGN
 `define RANDOMIZE
 `endif
@@ -330,7 +414,7 @@ end // initial
       dataReg <= 8'h0;
     end else if (_T_1) begin
       if (_T_2) begin
-        dataReg <= rx_io_channel_data;
+        dataReg <= rx_io_data;
       end
     end
     if (reset) begin
@@ -8097,6 +8181,7 @@ module Ibtida_top(
   input         clock,
   input         reset,
   input         io_rx_i,
+  input  [15:0] io_CLK_PER_BIT,
   input  [31:0] io_gpio_i,
   output [31:0] io_gpio_o,
   output [31:0] io_gpio_en_o,
@@ -8121,175 +8206,177 @@ module Ibtida_top(
   reg [31:0] _RAND_2;
   reg [31:0] _RAND_3;
 `endif // RANDOMIZE_REG_INIT
-  wire  uart_ctrl_clock; // @[Ibtida_top.scala 29:25]
-  wire  uart_ctrl_reset; // @[Ibtida_top.scala 29:25]
-  wire  uart_ctrl_io_isStalled; // @[Ibtida_top.scala 29:25]
-  wire [31:0] uart_ctrl_io_rx_data_o; // @[Ibtida_top.scala 29:25]
-  wire [13:0] uart_ctrl_io_addr_o; // @[Ibtida_top.scala 29:25]
-  wire  uart_ctrl_io_rxd; // @[Ibtida_top.scala 29:25]
-  wire  uart_ctrl_io_valid; // @[Ibtida_top.scala 29:25]
-  wire  uart_ctrl_io_done; // @[Ibtida_top.scala 29:25]
-  wire  core_clock; // @[Ibtida_top.scala 31:51]
-  wire  core_reset; // @[Ibtida_top.scala 31:51]
-  wire  core_io_data_gnt_i; // @[Ibtida_top.scala 31:51]
-  wire  core_io_data_rvalid_i; // @[Ibtida_top.scala 31:51]
-  wire [31:0] core_io_data_rdata_i; // @[Ibtida_top.scala 31:51]
-  wire  core_io_data_req_o; // @[Ibtida_top.scala 31:51]
-  wire  core_io_data_we_o; // @[Ibtida_top.scala 31:51]
-  wire  core_io_data_be_o_0; // @[Ibtida_top.scala 31:51]
-  wire  core_io_data_be_o_1; // @[Ibtida_top.scala 31:51]
-  wire  core_io_data_be_o_2; // @[Ibtida_top.scala 31:51]
-  wire  core_io_data_be_o_3; // @[Ibtida_top.scala 31:51]
-  wire [31:0] core_io_data_addr_o; // @[Ibtida_top.scala 31:51]
-  wire [7:0] core_io_data_wdata_o_0; // @[Ibtida_top.scala 31:51]
-  wire [7:0] core_io_data_wdata_o_1; // @[Ibtida_top.scala 31:51]
-  wire [7:0] core_io_data_wdata_o_2; // @[Ibtida_top.scala 31:51]
-  wire [7:0] core_io_data_wdata_o_3; // @[Ibtida_top.scala 31:51]
-  wire  core_io_instr_gnt_i; // @[Ibtida_top.scala 31:51]
-  wire  core_io_instr_rvalid_i; // @[Ibtida_top.scala 31:51]
-  wire [31:0] core_io_instr_rdata_i; // @[Ibtida_top.scala 31:51]
-  wire  core_io_instr_req_o; // @[Ibtida_top.scala 31:51]
-  wire [31:0] core_io_instr_addr_o; // @[Ibtida_top.scala 31:51]
-  wire  core_io_stall_core_i; // @[Ibtida_top.scala 31:51]
-  wire  core_io_irq_external_i; // @[Ibtida_top.scala 31:51]
-  wire  gpio_clock; // @[Ibtida_top.scala 34:51]
-  wire  gpio_reset; // @[Ibtida_top.scala 34:51]
-  wire  gpio_io_tl_i_a_valid; // @[Ibtida_top.scala 34:51]
-  wire [2:0] gpio_io_tl_i_a_opcode; // @[Ibtida_top.scala 34:51]
-  wire [31:0] gpio_io_tl_i_a_address; // @[Ibtida_top.scala 34:51]
-  wire [3:0] gpio_io_tl_i_a_mask; // @[Ibtida_top.scala 34:51]
-  wire [31:0] gpio_io_tl_i_a_data; // @[Ibtida_top.scala 34:51]
-  wire  gpio_io_tl_o_d_valid; // @[Ibtida_top.scala 34:51]
-  wire [31:0] gpio_io_tl_o_d_data; // @[Ibtida_top.scala 34:51]
-  wire  gpio_io_tl_o_a_ready; // @[Ibtida_top.scala 34:51]
-  wire [31:0] gpio_io_cio_gpio_i; // @[Ibtida_top.scala 34:51]
-  wire [31:0] gpio_io_cio_gpio_o; // @[Ibtida_top.scala 34:51]
-  wire [31:0] gpio_io_cio_gpio_en_o; // @[Ibtida_top.scala 34:51]
-  wire [31:0] gpio_io_intr_gpio_o; // @[Ibtida_top.scala 34:51]
-  wire  core_iccm_tl_host_io_req_i; // @[Ibtida_top.scala 35:51]
-  wire  core_iccm_tl_host_io_gnt_o; // @[Ibtida_top.scala 35:51]
-  wire [31:0] core_iccm_tl_host_io_addr_i; // @[Ibtida_top.scala 35:51]
-  wire  core_iccm_tl_host_io_we_i; // @[Ibtida_top.scala 35:51]
-  wire [31:0] core_iccm_tl_host_io_wdata_i; // @[Ibtida_top.scala 35:51]
-  wire [3:0] core_iccm_tl_host_io_be_i; // @[Ibtida_top.scala 35:51]
-  wire  core_iccm_tl_host_io_valid_o; // @[Ibtida_top.scala 35:51]
-  wire [31:0] core_iccm_tl_host_io_rdata_o; // @[Ibtida_top.scala 35:51]
-  wire  core_iccm_tl_host_io_tl_o_a_valid; // @[Ibtida_top.scala 35:51]
-  wire [2:0] core_iccm_tl_host_io_tl_o_a_opcode; // @[Ibtida_top.scala 35:51]
-  wire [31:0] core_iccm_tl_host_io_tl_o_a_address; // @[Ibtida_top.scala 35:51]
-  wire [3:0] core_iccm_tl_host_io_tl_o_a_mask; // @[Ibtida_top.scala 35:51]
-  wire [31:0] core_iccm_tl_host_io_tl_o_a_data; // @[Ibtida_top.scala 35:51]
-  wire  core_iccm_tl_host_io_tl_i_d_valid; // @[Ibtida_top.scala 35:51]
-  wire [31:0] core_iccm_tl_host_io_tl_i_d_data; // @[Ibtida_top.scala 35:51]
-  wire  core_iccm_tl_host_io_tl_i_a_ready; // @[Ibtida_top.scala 35:51]
-  wire  core_loadStore_tl_host_io_req_i; // @[Ibtida_top.scala 36:51]
-  wire  core_loadStore_tl_host_io_gnt_o; // @[Ibtida_top.scala 36:51]
-  wire [31:0] core_loadStore_tl_host_io_addr_i; // @[Ibtida_top.scala 36:51]
-  wire  core_loadStore_tl_host_io_we_i; // @[Ibtida_top.scala 36:51]
-  wire [31:0] core_loadStore_tl_host_io_wdata_i; // @[Ibtida_top.scala 36:51]
-  wire [3:0] core_loadStore_tl_host_io_be_i; // @[Ibtida_top.scala 36:51]
-  wire  core_loadStore_tl_host_io_valid_o; // @[Ibtida_top.scala 36:51]
-  wire [31:0] core_loadStore_tl_host_io_rdata_o; // @[Ibtida_top.scala 36:51]
-  wire  core_loadStore_tl_host_io_tl_o_a_valid; // @[Ibtida_top.scala 36:51]
-  wire [2:0] core_loadStore_tl_host_io_tl_o_a_opcode; // @[Ibtida_top.scala 36:51]
-  wire [31:0] core_loadStore_tl_host_io_tl_o_a_address; // @[Ibtida_top.scala 36:51]
-  wire [3:0] core_loadStore_tl_host_io_tl_o_a_mask; // @[Ibtida_top.scala 36:51]
-  wire [31:0] core_loadStore_tl_host_io_tl_o_a_data; // @[Ibtida_top.scala 36:51]
-  wire  core_loadStore_tl_host_io_tl_i_d_valid; // @[Ibtida_top.scala 36:51]
-  wire [31:0] core_loadStore_tl_host_io_tl_i_d_data; // @[Ibtida_top.scala 36:51]
-  wire  core_loadStore_tl_host_io_tl_i_a_ready; // @[Ibtida_top.scala 36:51]
-  wire  iccm_tl_device_clock; // @[Ibtida_top.scala 37:51]
-  wire  iccm_tl_device_reset; // @[Ibtida_top.scala 37:51]
-  wire  iccm_tl_device_io_tl_i_a_valid; // @[Ibtida_top.scala 37:51]
-  wire [2:0] iccm_tl_device_io_tl_i_a_opcode; // @[Ibtida_top.scala 37:51]
-  wire [31:0] iccm_tl_device_io_tl_i_a_address; // @[Ibtida_top.scala 37:51]
-  wire [3:0] iccm_tl_device_io_tl_i_a_mask; // @[Ibtida_top.scala 37:51]
-  wire  iccm_tl_device_io_tl_o_d_valid; // @[Ibtida_top.scala 37:51]
-  wire [31:0] iccm_tl_device_io_tl_o_d_data; // @[Ibtida_top.scala 37:51]
-  wire  iccm_tl_device_io_tl_o_a_ready; // @[Ibtida_top.scala 37:51]
-  wire [5:0] iccm_tl_device_io_addr_o; // @[Ibtida_top.scala 37:51]
-  wire [31:0] iccm_tl_device_io_rdata_i; // @[Ibtida_top.scala 37:51]
-  wire  dccm_tl_device_clock; // @[Ibtida_top.scala 38:51]
-  wire  dccm_tl_device_reset; // @[Ibtida_top.scala 38:51]
-  wire  dccm_tl_device_io_tl_i_a_valid; // @[Ibtida_top.scala 38:51]
-  wire [2:0] dccm_tl_device_io_tl_i_a_opcode; // @[Ibtida_top.scala 38:51]
-  wire [31:0] dccm_tl_device_io_tl_i_a_address; // @[Ibtida_top.scala 38:51]
-  wire [3:0] dccm_tl_device_io_tl_i_a_mask; // @[Ibtida_top.scala 38:51]
-  wire [31:0] dccm_tl_device_io_tl_i_a_data; // @[Ibtida_top.scala 38:51]
-  wire  dccm_tl_device_io_tl_o_d_valid; // @[Ibtida_top.scala 38:51]
-  wire [31:0] dccm_tl_device_io_tl_o_d_data; // @[Ibtida_top.scala 38:51]
-  wire  dccm_tl_device_io_tl_o_a_ready; // @[Ibtida_top.scala 38:51]
-  wire  dccm_tl_device_io_we_o_0; // @[Ibtida_top.scala 38:51]
-  wire  dccm_tl_device_io_we_o_1; // @[Ibtida_top.scala 38:51]
-  wire  dccm_tl_device_io_we_o_2; // @[Ibtida_top.scala 38:51]
-  wire  dccm_tl_device_io_we_o_3; // @[Ibtida_top.scala 38:51]
-  wire [5:0] dccm_tl_device_io_addr_o; // @[Ibtida_top.scala 38:51]
-  wire [31:0] dccm_tl_device_io_wdata_o; // @[Ibtida_top.scala 38:51]
-  wire [31:0] dccm_tl_device_io_rdata_i; // @[Ibtida_top.scala 38:51]
-  wire  tl_switch_1to2_clock; // @[Ibtida_top.scala 39:51]
-  wire  tl_switch_1to2_reset; // @[Ibtida_top.scala 39:51]
-  wire  tl_switch_1to2_io_tl_h_i_a_valid; // @[Ibtida_top.scala 39:51]
-  wire [2:0] tl_switch_1to2_io_tl_h_i_a_opcode; // @[Ibtida_top.scala 39:51]
-  wire [31:0] tl_switch_1to2_io_tl_h_i_a_address; // @[Ibtida_top.scala 39:51]
-  wire [3:0] tl_switch_1to2_io_tl_h_i_a_mask; // @[Ibtida_top.scala 39:51]
-  wire [31:0] tl_switch_1to2_io_tl_h_i_a_data; // @[Ibtida_top.scala 39:51]
-  wire  tl_switch_1to2_io_tl_h_o_d_valid; // @[Ibtida_top.scala 39:51]
-  wire [31:0] tl_switch_1to2_io_tl_h_o_d_data; // @[Ibtida_top.scala 39:51]
-  wire  tl_switch_1to2_io_tl_h_o_a_ready; // @[Ibtida_top.scala 39:51]
-  wire  tl_switch_1to2_io_tl_d_o_0_a_valid; // @[Ibtida_top.scala 39:51]
-  wire [2:0] tl_switch_1to2_io_tl_d_o_0_a_opcode; // @[Ibtida_top.scala 39:51]
-  wire [31:0] tl_switch_1to2_io_tl_d_o_0_a_address; // @[Ibtida_top.scala 39:51]
-  wire [3:0] tl_switch_1to2_io_tl_d_o_0_a_mask; // @[Ibtida_top.scala 39:51]
-  wire [31:0] tl_switch_1to2_io_tl_d_o_0_a_data; // @[Ibtida_top.scala 39:51]
-  wire  tl_switch_1to2_io_tl_d_o_1_a_valid; // @[Ibtida_top.scala 39:51]
-  wire [2:0] tl_switch_1to2_io_tl_d_o_1_a_opcode; // @[Ibtida_top.scala 39:51]
-  wire [31:0] tl_switch_1to2_io_tl_d_o_1_a_address; // @[Ibtida_top.scala 39:51]
-  wire [3:0] tl_switch_1to2_io_tl_d_o_1_a_mask; // @[Ibtida_top.scala 39:51]
-  wire [31:0] tl_switch_1to2_io_tl_d_o_1_a_data; // @[Ibtida_top.scala 39:51]
-  wire  tl_switch_1to2_io_tl_d_i_0_d_valid; // @[Ibtida_top.scala 39:51]
-  wire [31:0] tl_switch_1to2_io_tl_d_i_0_d_data; // @[Ibtida_top.scala 39:51]
-  wire  tl_switch_1to2_io_tl_d_i_0_a_ready; // @[Ibtida_top.scala 39:51]
-  wire  tl_switch_1to2_io_tl_d_i_1_d_valid; // @[Ibtida_top.scala 39:51]
-  wire [31:0] tl_switch_1to2_io_tl_d_i_1_d_data; // @[Ibtida_top.scala 39:51]
-  wire  tl_switch_1to2_io_tl_d_i_1_a_ready; // @[Ibtida_top.scala 39:51]
-  wire [1:0] tl_switch_1to2_io_dev_sel; // @[Ibtida_top.scala 39:51]
-  reg [31:0] rx_data_reg; // @[Ibtida_top.scala 47:52]
-  reg [31:0] rx_addr_reg; // @[Ibtida_top.scala 48:52]
-  reg  reset_reg; // @[Ibtida_top.scala 49:52]
-  reg [1:0] state_reg; // @[Ibtida_top.scala 53:52]
-  wire  _T_1 = state_reg == 2'h0; // @[Ibtida_top.scala 57:18]
-  wire  _T_4 = ~reset; // @[Ibtida_top.scala 59:49]
-  wire  _T_5 = reset_reg & _T_4; // @[Ibtida_top.scala 59:31]
-  wire  _T_6 = state_reg == 2'h1; // @[Ibtida_top.scala 76:25]
-  wire [13:0] _T_8 = uart_ctrl_io_valid ? uart_ctrl_io_addr_o : 14'h0; // @[Ibtida_top.scala 110:48]
-  wire  _T_9 = state_reg == 2'h2; // @[Ibtida_top.scala 112:25]
-  wire  _T_10 = state_reg == 2'h3; // @[Ibtida_top.scala 136:25]
-  wire [5:0] _GEN_4 = iccm_tl_device_io_addr_o; // @[Ibtida_top.scala 136:42]
-  wire [31:0] _GEN_10 = _T_9 ? rx_addr_reg : {{26'd0}, _GEN_4}; // @[Ibtida_top.scala 112:41]
-  wire  _GEN_13 = _T_6 ? 1'h0 : _T_9; // @[Ibtida_top.scala 76:40]
-  wire  _GEN_16 = _T_6 | _T_9; // @[Ibtida_top.scala 76:40]
-  wire [31:0] instr_addr = _T_1 ? {{26'd0}, iccm_tl_device_io_addr_o} : _GEN_10; // @[Ibtida_top.scala 57:28]
-  wire [31:0] _T_12 = core_loadStore_tl_host_io_tl_o_a_address & 32'hfffff000; // @[Ibtida_top.scala 170:14]
-  wire  _T_13 = _T_12 == 32'h40010000; // @[Ibtida_top.scala 170:44]
-  wire [31:0] _T_15 = core_loadStore_tl_host_io_tl_o_a_address & 32'hffffff03; // @[Ibtida_top.scala 174:20]
-  wire  _T_16 = _T_15 == 32'h10000000; // @[Ibtida_top.scala 174:50]
-  wire [1:0] _GEN_26 = _T_16 ? 2'h0 : 2'h2; // @[Ibtida_top.scala 174:82]
-  wire [15:0] _T_22 = {core_io_data_wdata_o_1,core_io_data_wdata_o_0}; // @[Ibtida_top.scala 251:72]
-  wire [15:0] _T_23 = {core_io_data_wdata_o_3,core_io_data_wdata_o_2}; // @[Ibtida_top.scala 251:72]
+  wire  uart_ctrl_clock; // @[Ibtida_top.scala 30:25]
+  wire  uart_ctrl_reset; // @[Ibtida_top.scala 30:25]
+  wire  uart_ctrl_io_isStalled; // @[Ibtida_top.scala 30:25]
+  wire [31:0] uart_ctrl_io_rx_data_o; // @[Ibtida_top.scala 30:25]
+  wire [7:0] uart_ctrl_io_addr_o; // @[Ibtida_top.scala 30:25]
+  wire [15:0] uart_ctrl_io_CLK_PER_BIT; // @[Ibtida_top.scala 30:25]
+  wire  uart_ctrl_io_rxd; // @[Ibtida_top.scala 30:25]
+  wire  uart_ctrl_io_valid; // @[Ibtida_top.scala 30:25]
+  wire  uart_ctrl_io_done; // @[Ibtida_top.scala 30:25]
+  wire  core_clock; // @[Ibtida_top.scala 33:51]
+  wire  core_reset; // @[Ibtida_top.scala 33:51]
+  wire  core_io_data_gnt_i; // @[Ibtida_top.scala 33:51]
+  wire  core_io_data_rvalid_i; // @[Ibtida_top.scala 33:51]
+  wire [31:0] core_io_data_rdata_i; // @[Ibtida_top.scala 33:51]
+  wire  core_io_data_req_o; // @[Ibtida_top.scala 33:51]
+  wire  core_io_data_we_o; // @[Ibtida_top.scala 33:51]
+  wire  core_io_data_be_o_0; // @[Ibtida_top.scala 33:51]
+  wire  core_io_data_be_o_1; // @[Ibtida_top.scala 33:51]
+  wire  core_io_data_be_o_2; // @[Ibtida_top.scala 33:51]
+  wire  core_io_data_be_o_3; // @[Ibtida_top.scala 33:51]
+  wire [31:0] core_io_data_addr_o; // @[Ibtida_top.scala 33:51]
+  wire [7:0] core_io_data_wdata_o_0; // @[Ibtida_top.scala 33:51]
+  wire [7:0] core_io_data_wdata_o_1; // @[Ibtida_top.scala 33:51]
+  wire [7:0] core_io_data_wdata_o_2; // @[Ibtida_top.scala 33:51]
+  wire [7:0] core_io_data_wdata_o_3; // @[Ibtida_top.scala 33:51]
+  wire  core_io_instr_gnt_i; // @[Ibtida_top.scala 33:51]
+  wire  core_io_instr_rvalid_i; // @[Ibtida_top.scala 33:51]
+  wire [31:0] core_io_instr_rdata_i; // @[Ibtida_top.scala 33:51]
+  wire  core_io_instr_req_o; // @[Ibtida_top.scala 33:51]
+  wire [31:0] core_io_instr_addr_o; // @[Ibtida_top.scala 33:51]
+  wire  core_io_stall_core_i; // @[Ibtida_top.scala 33:51]
+  wire  core_io_irq_external_i; // @[Ibtida_top.scala 33:51]
+  wire  gpio_clock; // @[Ibtida_top.scala 36:51]
+  wire  gpio_reset; // @[Ibtida_top.scala 36:51]
+  wire  gpio_io_tl_i_a_valid; // @[Ibtida_top.scala 36:51]
+  wire [2:0] gpio_io_tl_i_a_opcode; // @[Ibtida_top.scala 36:51]
+  wire [31:0] gpio_io_tl_i_a_address; // @[Ibtida_top.scala 36:51]
+  wire [3:0] gpio_io_tl_i_a_mask; // @[Ibtida_top.scala 36:51]
+  wire [31:0] gpio_io_tl_i_a_data; // @[Ibtida_top.scala 36:51]
+  wire  gpio_io_tl_o_d_valid; // @[Ibtida_top.scala 36:51]
+  wire [31:0] gpio_io_tl_o_d_data; // @[Ibtida_top.scala 36:51]
+  wire  gpio_io_tl_o_a_ready; // @[Ibtida_top.scala 36:51]
+  wire [31:0] gpio_io_cio_gpio_i; // @[Ibtida_top.scala 36:51]
+  wire [31:0] gpio_io_cio_gpio_o; // @[Ibtida_top.scala 36:51]
+  wire [31:0] gpio_io_cio_gpio_en_o; // @[Ibtida_top.scala 36:51]
+  wire [31:0] gpio_io_intr_gpio_o; // @[Ibtida_top.scala 36:51]
+  wire  core_iccm_tl_host_io_req_i; // @[Ibtida_top.scala 37:51]
+  wire  core_iccm_tl_host_io_gnt_o; // @[Ibtida_top.scala 37:51]
+  wire [31:0] core_iccm_tl_host_io_addr_i; // @[Ibtida_top.scala 37:51]
+  wire  core_iccm_tl_host_io_we_i; // @[Ibtida_top.scala 37:51]
+  wire [31:0] core_iccm_tl_host_io_wdata_i; // @[Ibtida_top.scala 37:51]
+  wire [3:0] core_iccm_tl_host_io_be_i; // @[Ibtida_top.scala 37:51]
+  wire  core_iccm_tl_host_io_valid_o; // @[Ibtida_top.scala 37:51]
+  wire [31:0] core_iccm_tl_host_io_rdata_o; // @[Ibtida_top.scala 37:51]
+  wire  core_iccm_tl_host_io_tl_o_a_valid; // @[Ibtida_top.scala 37:51]
+  wire [2:0] core_iccm_tl_host_io_tl_o_a_opcode; // @[Ibtida_top.scala 37:51]
+  wire [31:0] core_iccm_tl_host_io_tl_o_a_address; // @[Ibtida_top.scala 37:51]
+  wire [3:0] core_iccm_tl_host_io_tl_o_a_mask; // @[Ibtida_top.scala 37:51]
+  wire [31:0] core_iccm_tl_host_io_tl_o_a_data; // @[Ibtida_top.scala 37:51]
+  wire  core_iccm_tl_host_io_tl_i_d_valid; // @[Ibtida_top.scala 37:51]
+  wire [31:0] core_iccm_tl_host_io_tl_i_d_data; // @[Ibtida_top.scala 37:51]
+  wire  core_iccm_tl_host_io_tl_i_a_ready; // @[Ibtida_top.scala 37:51]
+  wire  core_loadStore_tl_host_io_req_i; // @[Ibtida_top.scala 38:51]
+  wire  core_loadStore_tl_host_io_gnt_o; // @[Ibtida_top.scala 38:51]
+  wire [31:0] core_loadStore_tl_host_io_addr_i; // @[Ibtida_top.scala 38:51]
+  wire  core_loadStore_tl_host_io_we_i; // @[Ibtida_top.scala 38:51]
+  wire [31:0] core_loadStore_tl_host_io_wdata_i; // @[Ibtida_top.scala 38:51]
+  wire [3:0] core_loadStore_tl_host_io_be_i; // @[Ibtida_top.scala 38:51]
+  wire  core_loadStore_tl_host_io_valid_o; // @[Ibtida_top.scala 38:51]
+  wire [31:0] core_loadStore_tl_host_io_rdata_o; // @[Ibtida_top.scala 38:51]
+  wire  core_loadStore_tl_host_io_tl_o_a_valid; // @[Ibtida_top.scala 38:51]
+  wire [2:0] core_loadStore_tl_host_io_tl_o_a_opcode; // @[Ibtida_top.scala 38:51]
+  wire [31:0] core_loadStore_tl_host_io_tl_o_a_address; // @[Ibtida_top.scala 38:51]
+  wire [3:0] core_loadStore_tl_host_io_tl_o_a_mask; // @[Ibtida_top.scala 38:51]
+  wire [31:0] core_loadStore_tl_host_io_tl_o_a_data; // @[Ibtida_top.scala 38:51]
+  wire  core_loadStore_tl_host_io_tl_i_d_valid; // @[Ibtida_top.scala 38:51]
+  wire [31:0] core_loadStore_tl_host_io_tl_i_d_data; // @[Ibtida_top.scala 38:51]
+  wire  core_loadStore_tl_host_io_tl_i_a_ready; // @[Ibtida_top.scala 38:51]
+  wire  iccm_tl_device_clock; // @[Ibtida_top.scala 39:51]
+  wire  iccm_tl_device_reset; // @[Ibtida_top.scala 39:51]
+  wire  iccm_tl_device_io_tl_i_a_valid; // @[Ibtida_top.scala 39:51]
+  wire [2:0] iccm_tl_device_io_tl_i_a_opcode; // @[Ibtida_top.scala 39:51]
+  wire [31:0] iccm_tl_device_io_tl_i_a_address; // @[Ibtida_top.scala 39:51]
+  wire [3:0] iccm_tl_device_io_tl_i_a_mask; // @[Ibtida_top.scala 39:51]
+  wire  iccm_tl_device_io_tl_o_d_valid; // @[Ibtida_top.scala 39:51]
+  wire [31:0] iccm_tl_device_io_tl_o_d_data; // @[Ibtida_top.scala 39:51]
+  wire  iccm_tl_device_io_tl_o_a_ready; // @[Ibtida_top.scala 39:51]
+  wire [5:0] iccm_tl_device_io_addr_o; // @[Ibtida_top.scala 39:51]
+  wire [31:0] iccm_tl_device_io_rdata_i; // @[Ibtida_top.scala 39:51]
+  wire  dccm_tl_device_clock; // @[Ibtida_top.scala 40:51]
+  wire  dccm_tl_device_reset; // @[Ibtida_top.scala 40:51]
+  wire  dccm_tl_device_io_tl_i_a_valid; // @[Ibtida_top.scala 40:51]
+  wire [2:0] dccm_tl_device_io_tl_i_a_opcode; // @[Ibtida_top.scala 40:51]
+  wire [31:0] dccm_tl_device_io_tl_i_a_address; // @[Ibtida_top.scala 40:51]
+  wire [3:0] dccm_tl_device_io_tl_i_a_mask; // @[Ibtida_top.scala 40:51]
+  wire [31:0] dccm_tl_device_io_tl_i_a_data; // @[Ibtida_top.scala 40:51]
+  wire  dccm_tl_device_io_tl_o_d_valid; // @[Ibtida_top.scala 40:51]
+  wire [31:0] dccm_tl_device_io_tl_o_d_data; // @[Ibtida_top.scala 40:51]
+  wire  dccm_tl_device_io_tl_o_a_ready; // @[Ibtida_top.scala 40:51]
+  wire  dccm_tl_device_io_we_o_0; // @[Ibtida_top.scala 40:51]
+  wire  dccm_tl_device_io_we_o_1; // @[Ibtida_top.scala 40:51]
+  wire  dccm_tl_device_io_we_o_2; // @[Ibtida_top.scala 40:51]
+  wire  dccm_tl_device_io_we_o_3; // @[Ibtida_top.scala 40:51]
+  wire [5:0] dccm_tl_device_io_addr_o; // @[Ibtida_top.scala 40:51]
+  wire [31:0] dccm_tl_device_io_wdata_o; // @[Ibtida_top.scala 40:51]
+  wire [31:0] dccm_tl_device_io_rdata_i; // @[Ibtida_top.scala 40:51]
+  wire  tl_switch_1to2_clock; // @[Ibtida_top.scala 41:51]
+  wire  tl_switch_1to2_reset; // @[Ibtida_top.scala 41:51]
+  wire  tl_switch_1to2_io_tl_h_i_a_valid; // @[Ibtida_top.scala 41:51]
+  wire [2:0] tl_switch_1to2_io_tl_h_i_a_opcode; // @[Ibtida_top.scala 41:51]
+  wire [31:0] tl_switch_1to2_io_tl_h_i_a_address; // @[Ibtida_top.scala 41:51]
+  wire [3:0] tl_switch_1to2_io_tl_h_i_a_mask; // @[Ibtida_top.scala 41:51]
+  wire [31:0] tl_switch_1to2_io_tl_h_i_a_data; // @[Ibtida_top.scala 41:51]
+  wire  tl_switch_1to2_io_tl_h_o_d_valid; // @[Ibtida_top.scala 41:51]
+  wire [31:0] tl_switch_1to2_io_tl_h_o_d_data; // @[Ibtida_top.scala 41:51]
+  wire  tl_switch_1to2_io_tl_h_o_a_ready; // @[Ibtida_top.scala 41:51]
+  wire  tl_switch_1to2_io_tl_d_o_0_a_valid; // @[Ibtida_top.scala 41:51]
+  wire [2:0] tl_switch_1to2_io_tl_d_o_0_a_opcode; // @[Ibtida_top.scala 41:51]
+  wire [31:0] tl_switch_1to2_io_tl_d_o_0_a_address; // @[Ibtida_top.scala 41:51]
+  wire [3:0] tl_switch_1to2_io_tl_d_o_0_a_mask; // @[Ibtida_top.scala 41:51]
+  wire [31:0] tl_switch_1to2_io_tl_d_o_0_a_data; // @[Ibtida_top.scala 41:51]
+  wire  tl_switch_1to2_io_tl_d_o_1_a_valid; // @[Ibtida_top.scala 41:51]
+  wire [2:0] tl_switch_1to2_io_tl_d_o_1_a_opcode; // @[Ibtida_top.scala 41:51]
+  wire [31:0] tl_switch_1to2_io_tl_d_o_1_a_address; // @[Ibtida_top.scala 41:51]
+  wire [3:0] tl_switch_1to2_io_tl_d_o_1_a_mask; // @[Ibtida_top.scala 41:51]
+  wire [31:0] tl_switch_1to2_io_tl_d_o_1_a_data; // @[Ibtida_top.scala 41:51]
+  wire  tl_switch_1to2_io_tl_d_i_0_d_valid; // @[Ibtida_top.scala 41:51]
+  wire [31:0] tl_switch_1to2_io_tl_d_i_0_d_data; // @[Ibtida_top.scala 41:51]
+  wire  tl_switch_1to2_io_tl_d_i_0_a_ready; // @[Ibtida_top.scala 41:51]
+  wire  tl_switch_1to2_io_tl_d_i_1_d_valid; // @[Ibtida_top.scala 41:51]
+  wire [31:0] tl_switch_1to2_io_tl_d_i_1_d_data; // @[Ibtida_top.scala 41:51]
+  wire  tl_switch_1to2_io_tl_d_i_1_a_ready; // @[Ibtida_top.scala 41:51]
+  wire [1:0] tl_switch_1to2_io_dev_sel; // @[Ibtida_top.scala 41:51]
+  reg [31:0] rx_data_reg; // @[Ibtida_top.scala 49:52]
+  reg [31:0] rx_addr_reg; // @[Ibtida_top.scala 50:52]
+  reg  reset_reg; // @[Ibtida_top.scala 51:52]
+  reg [1:0] state_reg; // @[Ibtida_top.scala 55:52]
+  wire  _T_1 = state_reg == 2'h0; // @[Ibtida_top.scala 59:18]
+  wire  _T_4 = ~reset; // @[Ibtida_top.scala 61:49]
+  wire  _T_5 = reset_reg & _T_4; // @[Ibtida_top.scala 61:31]
+  wire  _T_6 = state_reg == 2'h1; // @[Ibtida_top.scala 78:25]
+  wire [7:0] _T_8 = uart_ctrl_io_valid ? uart_ctrl_io_addr_o : 8'h0; // @[Ibtida_top.scala 112:48]
+  wire  _T_9 = state_reg == 2'h2; // @[Ibtida_top.scala 114:25]
+  wire  _T_10 = state_reg == 2'h3; // @[Ibtida_top.scala 138:25]
+  wire [5:0] _GEN_4 = iccm_tl_device_io_addr_o; // @[Ibtida_top.scala 138:42]
+  wire [31:0] _GEN_10 = _T_9 ? rx_addr_reg : {{26'd0}, _GEN_4}; // @[Ibtida_top.scala 114:41]
+  wire  _GEN_13 = _T_6 ? 1'h0 : _T_9; // @[Ibtida_top.scala 78:40]
+  wire  _GEN_16 = _T_6 | _T_9; // @[Ibtida_top.scala 78:40]
+  wire [31:0] instr_addr = _T_1 ? {{26'd0}, iccm_tl_device_io_addr_o} : _GEN_10; // @[Ibtida_top.scala 59:28]
+  wire [31:0] _T_12 = core_loadStore_tl_host_io_tl_o_a_address & 32'hfffff000; // @[Ibtida_top.scala 172:14]
+  wire  _T_13 = _T_12 == 32'h40010000; // @[Ibtida_top.scala 172:44]
+  wire [31:0] _T_15 = core_loadStore_tl_host_io_tl_o_a_address & 32'hffffff03; // @[Ibtida_top.scala 176:20]
+  wire  _T_16 = _T_15 == 32'h10000000; // @[Ibtida_top.scala 176:50]
+  wire [1:0] _GEN_26 = _T_16 ? 2'h0 : 2'h2; // @[Ibtida_top.scala 176:82]
+  wire [15:0] _T_22 = {core_io_data_wdata_o_1,core_io_data_wdata_o_0}; // @[Ibtida_top.scala 253:72]
+  wire [15:0] _T_23 = {core_io_data_wdata_o_3,core_io_data_wdata_o_2}; // @[Ibtida_top.scala 253:72]
   wire [1:0] _T_25 = {core_io_data_be_o_1,core_io_data_be_o_0}; // @[Cat.scala 29:58]
   wire [1:0] _T_26 = {core_io_data_be_o_3,core_io_data_be_o_2}; // @[Cat.scala 29:58]
   wire [3:0] _T_34 = {io_dccm_rdata_i[3],io_dccm_rdata_i[2],io_dccm_rdata_i[1],io_dccm_rdata_i[0]}; // @[Cat.scala 29:58]
-  UartController uart_ctrl ( // @[Ibtida_top.scala 29:25]
+  UartController uart_ctrl ( // @[Ibtida_top.scala 30:25]
     .clock(uart_ctrl_clock),
     .reset(uart_ctrl_reset),
     .io_isStalled(uart_ctrl_io_isStalled),
     .io_rx_data_o(uart_ctrl_io_rx_data_o),
     .io_addr_o(uart_ctrl_io_addr_o),
+    .io_CLK_PER_BIT(uart_ctrl_io_CLK_PER_BIT),
     .io_rxd(uart_ctrl_io_rxd),
     .io_valid(uart_ctrl_io_valid),
     .io_done(uart_ctrl_io_done)
   );
-  Core core ( // @[Ibtida_top.scala 31:51]
+  Core core ( // @[Ibtida_top.scala 33:51]
     .clock(core_clock),
     .reset(core_reset),
     .io_data_gnt_i(core_io_data_gnt_i),
@@ -8314,7 +8401,7 @@ module Ibtida_top(
     .io_stall_core_i(core_io_stall_core_i),
     .io_irq_external_i(core_io_irq_external_i)
   );
-  Gpio gpio ( // @[Ibtida_top.scala 34:51]
+  Gpio gpio ( // @[Ibtida_top.scala 36:51]
     .clock(gpio_clock),
     .reset(gpio_reset),
     .io_tl_i_a_valid(gpio_io_tl_i_a_valid),
@@ -8330,7 +8417,7 @@ module Ibtida_top(
     .io_cio_gpio_en_o(gpio_io_cio_gpio_en_o),
     .io_intr_gpio_o(gpio_io_intr_gpio_o)
   );
-  TL_HostAdapter core_iccm_tl_host ( // @[Ibtida_top.scala 35:51]
+  TL_HostAdapter core_iccm_tl_host ( // @[Ibtida_top.scala 37:51]
     .io_req_i(core_iccm_tl_host_io_req_i),
     .io_gnt_o(core_iccm_tl_host_io_gnt_o),
     .io_addr_i(core_iccm_tl_host_io_addr_i),
@@ -8348,7 +8435,7 @@ module Ibtida_top(
     .io_tl_i_d_data(core_iccm_tl_host_io_tl_i_d_data),
     .io_tl_i_a_ready(core_iccm_tl_host_io_tl_i_a_ready)
   );
-  TL_HostAdapter core_loadStore_tl_host ( // @[Ibtida_top.scala 36:51]
+  TL_HostAdapter core_loadStore_tl_host ( // @[Ibtida_top.scala 38:51]
     .io_req_i(core_loadStore_tl_host_io_req_i),
     .io_gnt_o(core_loadStore_tl_host_io_gnt_o),
     .io_addr_i(core_loadStore_tl_host_io_addr_i),
@@ -8366,7 +8453,7 @@ module Ibtida_top(
     .io_tl_i_d_data(core_loadStore_tl_host_io_tl_i_d_data),
     .io_tl_i_a_ready(core_loadStore_tl_host_io_tl_i_a_ready)
   );
-  TL_SramAdapter iccm_tl_device ( // @[Ibtida_top.scala 37:51]
+  TL_SramAdapter iccm_tl_device ( // @[Ibtida_top.scala 39:51]
     .clock(iccm_tl_device_clock),
     .reset(iccm_tl_device_reset),
     .io_tl_i_a_valid(iccm_tl_device_io_tl_i_a_valid),
@@ -8379,7 +8466,7 @@ module Ibtida_top(
     .io_addr_o(iccm_tl_device_io_addr_o),
     .io_rdata_i(iccm_tl_device_io_rdata_i)
   );
-  TL_SramAdapter_1 dccm_tl_device ( // @[Ibtida_top.scala 38:51]
+  TL_SramAdapter_1 dccm_tl_device ( // @[Ibtida_top.scala 40:51]
     .clock(dccm_tl_device_clock),
     .reset(dccm_tl_device_reset),
     .io_tl_i_a_valid(dccm_tl_device_io_tl_i_a_valid),
@@ -8398,7 +8485,7 @@ module Ibtida_top(
     .io_wdata_o(dccm_tl_device_io_wdata_o),
     .io_rdata_i(dccm_tl_device_io_rdata_i)
   );
-  TLSocket1_N tl_switch_1to2 ( // @[Ibtida_top.scala 39:51]
+  TLSocket1_N tl_switch_1to2 ( // @[Ibtida_top.scala 41:51]
     .clock(tl_switch_1to2_clock),
     .reset(tl_switch_1to2_reset),
     .io_tl_h_i_a_valid(tl_switch_1to2_io_tl_h_i_a_valid),
@@ -8427,87 +8514,88 @@ module Ibtida_top(
     .io_tl_d_i_1_a_ready(tl_switch_1to2_io_tl_d_i_1_a_ready),
     .io_dev_sel(tl_switch_1to2_io_dev_sel)
   );
-  assign io_gpio_o = gpio_io_cio_gpio_o; // @[Ibtida_top.scala 279:36]
-  assign io_gpio_en_o = ~gpio_io_cio_gpio_en_o; // @[Ibtida_top.scala 280:36]
-  assign io_iccm_we_o_0 = _T_1 ? 1'h0 : _GEN_13; // @[Ibtida_top.scala 230:36]
-  assign io_iccm_we_o_1 = _T_1 ? 1'h0 : _GEN_13; // @[Ibtida_top.scala 230:36]
-  assign io_iccm_we_o_2 = _T_1 ? 1'h0 : _GEN_13; // @[Ibtida_top.scala 230:36]
-  assign io_iccm_we_o_3 = _T_1 ? 1'h0 : _GEN_13; // @[Ibtida_top.scala 230:36]
-  assign io_iccm_wdata_o = rx_data_reg; // @[Ibtida_top.scala 232:36]
-  assign io_iccm_addr_o = instr_addr[7:0]; // @[Ibtida_top.scala 231:36]
-  assign io_dccm_we_o_0 = dccm_tl_device_io_we_o_0; // @[Ibtida_top.scala 264:36]
-  assign io_dccm_we_o_1 = dccm_tl_device_io_we_o_1; // @[Ibtida_top.scala 264:36]
-  assign io_dccm_we_o_2 = dccm_tl_device_io_we_o_2; // @[Ibtida_top.scala 264:36]
-  assign io_dccm_we_o_3 = dccm_tl_device_io_we_o_3; // @[Ibtida_top.scala 264:36]
-  assign io_dccm_wdata_o = dccm_tl_device_io_wdata_o; // @[Ibtida_top.scala 263:36]
-  assign io_dccm_addr_o = {{2'd0}, dccm_tl_device_io_addr_o}; // @[Ibtida_top.scala 262:36]
+  assign io_gpio_o = gpio_io_cio_gpio_o; // @[Ibtida_top.scala 281:36]
+  assign io_gpio_en_o = ~gpio_io_cio_gpio_en_o; // @[Ibtida_top.scala 282:36]
+  assign io_iccm_we_o_0 = _T_1 ? 1'h0 : _GEN_13; // @[Ibtida_top.scala 232:36]
+  assign io_iccm_we_o_1 = _T_1 ? 1'h0 : _GEN_13; // @[Ibtida_top.scala 232:36]
+  assign io_iccm_we_o_2 = _T_1 ? 1'h0 : _GEN_13; // @[Ibtida_top.scala 232:36]
+  assign io_iccm_we_o_3 = _T_1 ? 1'h0 : _GEN_13; // @[Ibtida_top.scala 232:36]
+  assign io_iccm_wdata_o = rx_data_reg; // @[Ibtida_top.scala 234:36]
+  assign io_iccm_addr_o = instr_addr[7:0]; // @[Ibtida_top.scala 233:36]
+  assign io_dccm_we_o_0 = dccm_tl_device_io_we_o_0; // @[Ibtida_top.scala 266:36]
+  assign io_dccm_we_o_1 = dccm_tl_device_io_we_o_1; // @[Ibtida_top.scala 266:36]
+  assign io_dccm_we_o_2 = dccm_tl_device_io_we_o_2; // @[Ibtida_top.scala 266:36]
+  assign io_dccm_we_o_3 = dccm_tl_device_io_we_o_3; // @[Ibtida_top.scala 266:36]
+  assign io_dccm_wdata_o = dccm_tl_device_io_wdata_o; // @[Ibtida_top.scala 265:36]
+  assign io_dccm_addr_o = {{2'd0}, dccm_tl_device_io_addr_o}; // @[Ibtida_top.scala 264:36]
   assign uart_ctrl_clock = clock;
   assign uart_ctrl_reset = reset;
-  assign uart_ctrl_io_isStalled = _T_1 ? 1'h0 : _GEN_16; // @[Ibtida_top.scala 75:36 Ibtida_top.scala 102:36 Ibtida_top.scala 134:36 Ibtida_top.scala 144:36]
-  assign uart_ctrl_io_rxd = io_rx_i; // @[Ibtida_top.scala 51:36]
+  assign uart_ctrl_io_isStalled = _T_1 ? 1'h0 : _GEN_16; // @[Ibtida_top.scala 77:36 Ibtida_top.scala 104:36 Ibtida_top.scala 136:36 Ibtida_top.scala 146:36]
+  assign uart_ctrl_io_CLK_PER_BIT = io_CLK_PER_BIT; // @[Ibtida_top.scala 31:28]
+  assign uart_ctrl_io_rxd = io_rx_i; // @[Ibtida_top.scala 53:36]
   assign core_clock = clock;
   assign core_reset = reset;
-  assign core_io_data_gnt_i = core_loadStore_tl_host_io_gnt_o; // @[Ibtida_top.scala 284:36]
-  assign core_io_data_rvalid_i = core_loadStore_tl_host_io_valid_o; // @[Ibtida_top.scala 285:36]
-  assign core_io_data_rdata_i = core_loadStore_tl_host_io_rdata_o; // @[Ibtida_top.scala 286:36]
-  assign core_io_instr_gnt_i = core_iccm_tl_host_io_gnt_o; // @[Ibtida_top.scala 242:36]
-  assign core_io_instr_rvalid_i = core_iccm_tl_host_io_valid_o; // @[Ibtida_top.scala 243:36]
-  assign core_io_instr_rdata_i = core_iccm_tl_host_io_rdata_o; // @[Ibtida_top.scala 241:36]
-  assign core_io_stall_core_i = _T_1 ? 1'h0 : _GEN_16; // @[Ibtida_top.scala 74:36 Ibtida_top.scala 101:36 Ibtida_top.scala 133:36 Ibtida_top.scala 143:36]
-  assign core_io_irq_external_i = |gpio_io_intr_gpio_o; // @[Ibtida_top.scala 283:36]
+  assign core_io_data_gnt_i = core_loadStore_tl_host_io_gnt_o; // @[Ibtida_top.scala 286:36]
+  assign core_io_data_rvalid_i = core_loadStore_tl_host_io_valid_o; // @[Ibtida_top.scala 287:36]
+  assign core_io_data_rdata_i = core_loadStore_tl_host_io_rdata_o; // @[Ibtida_top.scala 288:36]
+  assign core_io_instr_gnt_i = core_iccm_tl_host_io_gnt_o; // @[Ibtida_top.scala 244:36]
+  assign core_io_instr_rvalid_i = core_iccm_tl_host_io_valid_o; // @[Ibtida_top.scala 245:36]
+  assign core_io_instr_rdata_i = core_iccm_tl_host_io_rdata_o; // @[Ibtida_top.scala 243:36]
+  assign core_io_stall_core_i = _T_1 ? 1'h0 : _GEN_16; // @[Ibtida_top.scala 76:36 Ibtida_top.scala 103:36 Ibtida_top.scala 135:36 Ibtida_top.scala 145:36]
+  assign core_io_irq_external_i = |gpio_io_intr_gpio_o; // @[Ibtida_top.scala 285:36]
   assign gpio_clock = clock;
   assign gpio_reset = reset;
-  assign gpio_io_tl_i_a_valid = tl_switch_1to2_io_tl_d_o_1_a_valid; // @[Ibtida_top.scala 211:36]
-  assign gpio_io_tl_i_a_opcode = tl_switch_1to2_io_tl_d_o_1_a_opcode; // @[Ibtida_top.scala 211:36]
-  assign gpio_io_tl_i_a_address = tl_switch_1to2_io_tl_d_o_1_a_address; // @[Ibtida_top.scala 211:36]
-  assign gpio_io_tl_i_a_mask = tl_switch_1to2_io_tl_d_o_1_a_mask; // @[Ibtida_top.scala 211:36]
-  assign gpio_io_tl_i_a_data = tl_switch_1to2_io_tl_d_o_1_a_data; // @[Ibtida_top.scala 211:36]
-  assign gpio_io_cio_gpio_i = io_gpio_i; // @[Ibtida_top.scala 277:36]
-  assign core_iccm_tl_host_io_req_i = core_io_instr_req_o; // @[Ibtida_top.scala 220:36]
-  assign core_iccm_tl_host_io_addr_i = core_io_instr_addr_o; // @[Ibtida_top.scala 221:36]
-  assign core_iccm_tl_host_io_we_i = 1'h0; // @[Ibtida_top.scala 222:36]
-  assign core_iccm_tl_host_io_wdata_i = 32'h0; // @[Ibtida_top.scala 223:36]
-  assign core_iccm_tl_host_io_be_i = 4'hf; // @[Ibtida_top.scala 224:36]
-  assign core_iccm_tl_host_io_tl_i_d_valid = iccm_tl_device_io_tl_o_d_valid; // @[Ibtida_top.scala 227:36]
-  assign core_iccm_tl_host_io_tl_i_d_data = iccm_tl_device_io_tl_o_d_data; // @[Ibtida_top.scala 227:36]
-  assign core_iccm_tl_host_io_tl_i_a_ready = 1'h1; // @[Ibtida_top.scala 227:36]
-  assign core_loadStore_tl_host_io_req_i = core_io_data_req_o; // @[Ibtida_top.scala 248:36]
-  assign core_loadStore_tl_host_io_addr_i = core_io_data_addr_o; // @[Ibtida_top.scala 249:36]
-  assign core_loadStore_tl_host_io_we_i = core_io_data_we_o; // @[Ibtida_top.scala 250:36]
-  assign core_loadStore_tl_host_io_wdata_i = {_T_23,_T_22}; // @[Ibtida_top.scala 251:36]
-  assign core_loadStore_tl_host_io_be_i = {_T_26,_T_25}; // @[Ibtida_top.scala 252:36]
-  assign core_loadStore_tl_host_io_tl_i_d_valid = tl_switch_1to2_io_tl_h_o_d_valid; // @[Ibtida_top.scala 197:36]
-  assign core_loadStore_tl_host_io_tl_i_d_data = tl_switch_1to2_io_tl_h_o_d_data; // @[Ibtida_top.scala 197:36]
-  assign core_loadStore_tl_host_io_tl_i_a_ready = tl_switch_1to2_io_tl_h_o_a_ready; // @[Ibtida_top.scala 197:36]
+  assign gpio_io_tl_i_a_valid = tl_switch_1to2_io_tl_d_o_1_a_valid; // @[Ibtida_top.scala 213:36]
+  assign gpio_io_tl_i_a_opcode = tl_switch_1to2_io_tl_d_o_1_a_opcode; // @[Ibtida_top.scala 213:36]
+  assign gpio_io_tl_i_a_address = tl_switch_1to2_io_tl_d_o_1_a_address; // @[Ibtida_top.scala 213:36]
+  assign gpio_io_tl_i_a_mask = tl_switch_1to2_io_tl_d_o_1_a_mask; // @[Ibtida_top.scala 213:36]
+  assign gpio_io_tl_i_a_data = tl_switch_1to2_io_tl_d_o_1_a_data; // @[Ibtida_top.scala 213:36]
+  assign gpio_io_cio_gpio_i = io_gpio_i; // @[Ibtida_top.scala 279:36]
+  assign core_iccm_tl_host_io_req_i = core_io_instr_req_o; // @[Ibtida_top.scala 222:36]
+  assign core_iccm_tl_host_io_addr_i = core_io_instr_addr_o; // @[Ibtida_top.scala 223:36]
+  assign core_iccm_tl_host_io_we_i = 1'h0; // @[Ibtida_top.scala 224:36]
+  assign core_iccm_tl_host_io_wdata_i = 32'h0; // @[Ibtida_top.scala 225:36]
+  assign core_iccm_tl_host_io_be_i = 4'hf; // @[Ibtida_top.scala 226:36]
+  assign core_iccm_tl_host_io_tl_i_d_valid = iccm_tl_device_io_tl_o_d_valid; // @[Ibtida_top.scala 229:36]
+  assign core_iccm_tl_host_io_tl_i_d_data = iccm_tl_device_io_tl_o_d_data; // @[Ibtida_top.scala 229:36]
+  assign core_iccm_tl_host_io_tl_i_a_ready = 1'h1; // @[Ibtida_top.scala 229:36]
+  assign core_loadStore_tl_host_io_req_i = core_io_data_req_o; // @[Ibtida_top.scala 250:36]
+  assign core_loadStore_tl_host_io_addr_i = core_io_data_addr_o; // @[Ibtida_top.scala 251:36]
+  assign core_loadStore_tl_host_io_we_i = core_io_data_we_o; // @[Ibtida_top.scala 252:36]
+  assign core_loadStore_tl_host_io_wdata_i = {_T_23,_T_22}; // @[Ibtida_top.scala 253:36]
+  assign core_loadStore_tl_host_io_be_i = {_T_26,_T_25}; // @[Ibtida_top.scala 254:36]
+  assign core_loadStore_tl_host_io_tl_i_d_valid = tl_switch_1to2_io_tl_h_o_d_valid; // @[Ibtida_top.scala 199:36]
+  assign core_loadStore_tl_host_io_tl_i_d_data = tl_switch_1to2_io_tl_h_o_d_data; // @[Ibtida_top.scala 199:36]
+  assign core_loadStore_tl_host_io_tl_i_a_ready = tl_switch_1to2_io_tl_h_o_a_ready; // @[Ibtida_top.scala 199:36]
   assign iccm_tl_device_clock = clock;
   assign iccm_tl_device_reset = reset;
-  assign iccm_tl_device_io_tl_i_a_valid = core_iccm_tl_host_io_tl_o_a_valid; // @[Ibtida_top.scala 226:36]
-  assign iccm_tl_device_io_tl_i_a_opcode = core_iccm_tl_host_io_tl_o_a_opcode; // @[Ibtida_top.scala 226:36]
-  assign iccm_tl_device_io_tl_i_a_address = core_iccm_tl_host_io_tl_o_a_address; // @[Ibtida_top.scala 226:36]
-  assign iccm_tl_device_io_tl_i_a_mask = core_iccm_tl_host_io_tl_o_a_mask; // @[Ibtida_top.scala 226:36]
-  assign iccm_tl_device_io_rdata_i = io_iccm_rdata_i; // @[Ibtida_top.scala 239:36]
+  assign iccm_tl_device_io_tl_i_a_valid = core_iccm_tl_host_io_tl_o_a_valid; // @[Ibtida_top.scala 228:36]
+  assign iccm_tl_device_io_tl_i_a_opcode = core_iccm_tl_host_io_tl_o_a_opcode; // @[Ibtida_top.scala 228:36]
+  assign iccm_tl_device_io_tl_i_a_address = core_iccm_tl_host_io_tl_o_a_address; // @[Ibtida_top.scala 228:36]
+  assign iccm_tl_device_io_tl_i_a_mask = core_iccm_tl_host_io_tl_o_a_mask; // @[Ibtida_top.scala 228:36]
+  assign iccm_tl_device_io_rdata_i = io_iccm_rdata_i; // @[Ibtida_top.scala 241:36]
   assign dccm_tl_device_clock = clock;
   assign dccm_tl_device_reset = reset;
-  assign dccm_tl_device_io_tl_i_a_valid = tl_switch_1to2_io_tl_d_o_0_a_valid; // @[Ibtida_top.scala 202:36]
-  assign dccm_tl_device_io_tl_i_a_opcode = tl_switch_1to2_io_tl_d_o_0_a_opcode; // @[Ibtida_top.scala 202:36]
-  assign dccm_tl_device_io_tl_i_a_address = tl_switch_1to2_io_tl_d_o_0_a_address; // @[Ibtida_top.scala 202:36]
-  assign dccm_tl_device_io_tl_i_a_mask = tl_switch_1to2_io_tl_d_o_0_a_mask; // @[Ibtida_top.scala 202:36]
-  assign dccm_tl_device_io_tl_i_a_data = tl_switch_1to2_io_tl_d_o_0_a_data; // @[Ibtida_top.scala 202:36]
-  assign dccm_tl_device_io_rdata_i = {{28'd0}, _T_34}; // @[Ibtida_top.scala 258:36]
+  assign dccm_tl_device_io_tl_i_a_valid = tl_switch_1to2_io_tl_d_o_0_a_valid; // @[Ibtida_top.scala 204:36]
+  assign dccm_tl_device_io_tl_i_a_opcode = tl_switch_1to2_io_tl_d_o_0_a_opcode; // @[Ibtida_top.scala 204:36]
+  assign dccm_tl_device_io_tl_i_a_address = tl_switch_1to2_io_tl_d_o_0_a_address; // @[Ibtida_top.scala 204:36]
+  assign dccm_tl_device_io_tl_i_a_mask = tl_switch_1to2_io_tl_d_o_0_a_mask; // @[Ibtida_top.scala 204:36]
+  assign dccm_tl_device_io_tl_i_a_data = tl_switch_1to2_io_tl_d_o_0_a_data; // @[Ibtida_top.scala 204:36]
+  assign dccm_tl_device_io_rdata_i = {{28'd0}, _T_34}; // @[Ibtida_top.scala 260:36]
   assign tl_switch_1to2_clock = clock;
   assign tl_switch_1to2_reset = reset;
-  assign tl_switch_1to2_io_tl_h_i_a_valid = core_loadStore_tl_host_io_tl_o_a_valid; // @[Ibtida_top.scala 193:36]
-  assign tl_switch_1to2_io_tl_h_i_a_opcode = core_loadStore_tl_host_io_tl_o_a_opcode; // @[Ibtida_top.scala 193:36]
-  assign tl_switch_1to2_io_tl_h_i_a_address = core_loadStore_tl_host_io_tl_o_a_address; // @[Ibtida_top.scala 193:36]
-  assign tl_switch_1to2_io_tl_h_i_a_mask = core_loadStore_tl_host_io_tl_o_a_mask; // @[Ibtida_top.scala 193:36]
-  assign tl_switch_1to2_io_tl_h_i_a_data = core_loadStore_tl_host_io_tl_o_a_data; // @[Ibtida_top.scala 193:36]
-  assign tl_switch_1to2_io_tl_d_i_0_d_valid = dccm_tl_device_io_tl_o_d_valid; // @[Ibtida_top.scala 206:36]
-  assign tl_switch_1to2_io_tl_d_i_0_d_data = dccm_tl_device_io_tl_o_d_data; // @[Ibtida_top.scala 206:36]
-  assign tl_switch_1to2_io_tl_d_i_0_a_ready = dccm_tl_device_io_tl_o_a_ready; // @[Ibtida_top.scala 206:36]
-  assign tl_switch_1to2_io_tl_d_i_1_d_valid = gpio_io_tl_o_d_valid; // @[Ibtida_top.scala 215:36]
-  assign tl_switch_1to2_io_tl_d_i_1_d_data = gpio_io_tl_o_d_data; // @[Ibtida_top.scala 215:36]
-  assign tl_switch_1to2_io_tl_d_i_1_a_ready = gpio_io_tl_o_a_ready; // @[Ibtida_top.scala 215:36]
-  assign tl_switch_1to2_io_dev_sel = _T_13 ? 2'h1 : _GEN_26; // @[Ibtida_top.scala 189:36]
+  assign tl_switch_1to2_io_tl_h_i_a_valid = core_loadStore_tl_host_io_tl_o_a_valid; // @[Ibtida_top.scala 195:36]
+  assign tl_switch_1to2_io_tl_h_i_a_opcode = core_loadStore_tl_host_io_tl_o_a_opcode; // @[Ibtida_top.scala 195:36]
+  assign tl_switch_1to2_io_tl_h_i_a_address = core_loadStore_tl_host_io_tl_o_a_address; // @[Ibtida_top.scala 195:36]
+  assign tl_switch_1to2_io_tl_h_i_a_mask = core_loadStore_tl_host_io_tl_o_a_mask; // @[Ibtida_top.scala 195:36]
+  assign tl_switch_1to2_io_tl_h_i_a_data = core_loadStore_tl_host_io_tl_o_a_data; // @[Ibtida_top.scala 195:36]
+  assign tl_switch_1to2_io_tl_d_i_0_d_valid = dccm_tl_device_io_tl_o_d_valid; // @[Ibtida_top.scala 208:36]
+  assign tl_switch_1to2_io_tl_d_i_0_d_data = dccm_tl_device_io_tl_o_d_data; // @[Ibtida_top.scala 208:36]
+  assign tl_switch_1to2_io_tl_d_i_0_a_ready = dccm_tl_device_io_tl_o_a_ready; // @[Ibtida_top.scala 208:36]
+  assign tl_switch_1to2_io_tl_d_i_1_d_valid = gpio_io_tl_o_d_valid; // @[Ibtida_top.scala 217:36]
+  assign tl_switch_1to2_io_tl_d_i_1_d_data = gpio_io_tl_o_d_data; // @[Ibtida_top.scala 217:36]
+  assign tl_switch_1to2_io_tl_d_i_1_a_ready = gpio_io_tl_o_a_ready; // @[Ibtida_top.scala 217:36]
+  assign tl_switch_1to2_io_dev_sel = _T_13 ? 2'h1 : _GEN_26; // @[Ibtida_top.scala 191:36]
 `ifdef RANDOMIZE_GARBAGE_ASSIGN
 `define RANDOMIZE
 `endif
@@ -8574,7 +8662,7 @@ end // initial
       rx_addr_reg <= 32'h0;
     end else if (!(_T_1)) begin
       if (_T_6) begin
-        rx_addr_reg <= {{18'd0}, _T_8};
+        rx_addr_reg <= {{24'd0}, _T_8};
       end
     end
     reset_reg <= reset;
@@ -8871,58 +8959,61 @@ module Ibtida_top_dffram_cv(
   input         clock,
   input         reset,
   input         io_rx_i,
+  input  [15:0] io_CLK_PER_BIT,
   input  [29:0] io_gpio_i,
   output [29:0] io_gpio_o,
   output [29:0] io_gpio_en_o
 );
-  wire  ibtidaTop_clock; // @[Ibtida_top_dffram_cv.scala 14:25]
-  wire  ibtidaTop_reset; // @[Ibtida_top_dffram_cv.scala 14:25]
-  wire  ibtidaTop_io_rx_i; // @[Ibtida_top_dffram_cv.scala 14:25]
-  wire [31:0] ibtidaTop_io_gpio_i; // @[Ibtida_top_dffram_cv.scala 14:25]
-  wire [31:0] ibtidaTop_io_gpio_o; // @[Ibtida_top_dffram_cv.scala 14:25]
-  wire [31:0] ibtidaTop_io_gpio_en_o; // @[Ibtida_top_dffram_cv.scala 14:25]
-  wire  ibtidaTop_io_iccm_we_o_0; // @[Ibtida_top_dffram_cv.scala 14:25]
-  wire  ibtidaTop_io_iccm_we_o_1; // @[Ibtida_top_dffram_cv.scala 14:25]
-  wire  ibtidaTop_io_iccm_we_o_2; // @[Ibtida_top_dffram_cv.scala 14:25]
-  wire  ibtidaTop_io_iccm_we_o_3; // @[Ibtida_top_dffram_cv.scala 14:25]
-  wire [31:0] ibtidaTop_io_iccm_wdata_o; // @[Ibtida_top_dffram_cv.scala 14:25]
-  wire [7:0] ibtidaTop_io_iccm_addr_o; // @[Ibtida_top_dffram_cv.scala 14:25]
-  wire [31:0] ibtidaTop_io_iccm_rdata_i; // @[Ibtida_top_dffram_cv.scala 14:25]
-  wire  ibtidaTop_io_dccm_we_o_0; // @[Ibtida_top_dffram_cv.scala 14:25]
-  wire  ibtidaTop_io_dccm_we_o_1; // @[Ibtida_top_dffram_cv.scala 14:25]
-  wire  ibtidaTop_io_dccm_we_o_2; // @[Ibtida_top_dffram_cv.scala 14:25]
-  wire  ibtidaTop_io_dccm_we_o_3; // @[Ibtida_top_dffram_cv.scala 14:25]
-  wire [31:0] ibtidaTop_io_dccm_wdata_o; // @[Ibtida_top_dffram_cv.scala 14:25]
-  wire [7:0] ibtidaTop_io_dccm_addr_o; // @[Ibtida_top_dffram_cv.scala 14:25]
-  wire [31:0] ibtidaTop_io_dccm_rdata_i; // @[Ibtida_top_dffram_cv.scala 14:25]
-  wire  iccm_clock; // @[Ibtida_top_dffram_cv.scala 15:25]
-  wire  iccm_io_we_i_0; // @[Ibtida_top_dffram_cv.scala 15:25]
-  wire  iccm_io_we_i_1; // @[Ibtida_top_dffram_cv.scala 15:25]
-  wire  iccm_io_we_i_2; // @[Ibtida_top_dffram_cv.scala 15:25]
-  wire  iccm_io_we_i_3; // @[Ibtida_top_dffram_cv.scala 15:25]
-  wire [5:0] iccm_io_addr_i; // @[Ibtida_top_dffram_cv.scala 15:25]
-  wire [31:0] iccm_io_wdata_i; // @[Ibtida_top_dffram_cv.scala 15:25]
-  wire [31:0] iccm_io_rdata_o; // @[Ibtida_top_dffram_cv.scala 15:25]
-  wire  dccm_clock; // @[Ibtida_top_dffram_cv.scala 16:25]
-  wire  dccm_io_we_i_0; // @[Ibtida_top_dffram_cv.scala 16:25]
-  wire  dccm_io_we_i_1; // @[Ibtida_top_dffram_cv.scala 16:25]
-  wire  dccm_io_we_i_2; // @[Ibtida_top_dffram_cv.scala 16:25]
-  wire  dccm_io_we_i_3; // @[Ibtida_top_dffram_cv.scala 16:25]
-  wire [5:0] dccm_io_addr_i; // @[Ibtida_top_dffram_cv.scala 16:25]
-  wire [7:0] dccm_io_wdata_i_0; // @[Ibtida_top_dffram_cv.scala 16:25]
-  wire [7:0] dccm_io_wdata_i_1; // @[Ibtida_top_dffram_cv.scala 16:25]
-  wire [7:0] dccm_io_wdata_i_2; // @[Ibtida_top_dffram_cv.scala 16:25]
-  wire [7:0] dccm_io_wdata_i_3; // @[Ibtida_top_dffram_cv.scala 16:25]
-  wire [7:0] dccm_io_rdata_o_0; // @[Ibtida_top_dffram_cv.scala 16:25]
-  wire [7:0] dccm_io_rdata_o_1; // @[Ibtida_top_dffram_cv.scala 16:25]
-  wire [7:0] dccm_io_rdata_o_2; // @[Ibtida_top_dffram_cv.scala 16:25]
-  wire [7:0] dccm_io_rdata_o_3; // @[Ibtida_top_dffram_cv.scala 16:25]
-  wire [15:0] _T_6 = {dccm_io_rdata_o_1,dccm_io_rdata_o_0}; // @[Ibtida_top_dffram_cv.scala 39:54]
-  wire [15:0] _T_7 = {dccm_io_rdata_o_3,dccm_io_rdata_o_2}; // @[Ibtida_top_dffram_cv.scala 39:54]
-  Ibtida_top ibtidaTop ( // @[Ibtida_top_dffram_cv.scala 14:25]
+  wire  ibtidaTop_clock; // @[Ibtida_top_dffram_cv.scala 15:25]
+  wire  ibtidaTop_reset; // @[Ibtida_top_dffram_cv.scala 15:25]
+  wire  ibtidaTop_io_rx_i; // @[Ibtida_top_dffram_cv.scala 15:25]
+  wire [15:0] ibtidaTop_io_CLK_PER_BIT; // @[Ibtida_top_dffram_cv.scala 15:25]
+  wire [31:0] ibtidaTop_io_gpio_i; // @[Ibtida_top_dffram_cv.scala 15:25]
+  wire [31:0] ibtidaTop_io_gpio_o; // @[Ibtida_top_dffram_cv.scala 15:25]
+  wire [31:0] ibtidaTop_io_gpio_en_o; // @[Ibtida_top_dffram_cv.scala 15:25]
+  wire  ibtidaTop_io_iccm_we_o_0; // @[Ibtida_top_dffram_cv.scala 15:25]
+  wire  ibtidaTop_io_iccm_we_o_1; // @[Ibtida_top_dffram_cv.scala 15:25]
+  wire  ibtidaTop_io_iccm_we_o_2; // @[Ibtida_top_dffram_cv.scala 15:25]
+  wire  ibtidaTop_io_iccm_we_o_3; // @[Ibtida_top_dffram_cv.scala 15:25]
+  wire [31:0] ibtidaTop_io_iccm_wdata_o; // @[Ibtida_top_dffram_cv.scala 15:25]
+  wire [7:0] ibtidaTop_io_iccm_addr_o; // @[Ibtida_top_dffram_cv.scala 15:25]
+  wire [31:0] ibtidaTop_io_iccm_rdata_i; // @[Ibtida_top_dffram_cv.scala 15:25]
+  wire  ibtidaTop_io_dccm_we_o_0; // @[Ibtida_top_dffram_cv.scala 15:25]
+  wire  ibtidaTop_io_dccm_we_o_1; // @[Ibtida_top_dffram_cv.scala 15:25]
+  wire  ibtidaTop_io_dccm_we_o_2; // @[Ibtida_top_dffram_cv.scala 15:25]
+  wire  ibtidaTop_io_dccm_we_o_3; // @[Ibtida_top_dffram_cv.scala 15:25]
+  wire [31:0] ibtidaTop_io_dccm_wdata_o; // @[Ibtida_top_dffram_cv.scala 15:25]
+  wire [7:0] ibtidaTop_io_dccm_addr_o; // @[Ibtida_top_dffram_cv.scala 15:25]
+  wire [31:0] ibtidaTop_io_dccm_rdata_i; // @[Ibtida_top_dffram_cv.scala 15:25]
+  wire  iccm_clock; // @[Ibtida_top_dffram_cv.scala 16:25]
+  wire  iccm_io_we_i_0; // @[Ibtida_top_dffram_cv.scala 16:25]
+  wire  iccm_io_we_i_1; // @[Ibtida_top_dffram_cv.scala 16:25]
+  wire  iccm_io_we_i_2; // @[Ibtida_top_dffram_cv.scala 16:25]
+  wire  iccm_io_we_i_3; // @[Ibtida_top_dffram_cv.scala 16:25]
+  wire [5:0] iccm_io_addr_i; // @[Ibtida_top_dffram_cv.scala 16:25]
+  wire [31:0] iccm_io_wdata_i; // @[Ibtida_top_dffram_cv.scala 16:25]
+  wire [31:0] iccm_io_rdata_o; // @[Ibtida_top_dffram_cv.scala 16:25]
+  wire  dccm_clock; // @[Ibtida_top_dffram_cv.scala 17:25]
+  wire  dccm_io_we_i_0; // @[Ibtida_top_dffram_cv.scala 17:25]
+  wire  dccm_io_we_i_1; // @[Ibtida_top_dffram_cv.scala 17:25]
+  wire  dccm_io_we_i_2; // @[Ibtida_top_dffram_cv.scala 17:25]
+  wire  dccm_io_we_i_3; // @[Ibtida_top_dffram_cv.scala 17:25]
+  wire [5:0] dccm_io_addr_i; // @[Ibtida_top_dffram_cv.scala 17:25]
+  wire [7:0] dccm_io_wdata_i_0; // @[Ibtida_top_dffram_cv.scala 17:25]
+  wire [7:0] dccm_io_wdata_i_1; // @[Ibtida_top_dffram_cv.scala 17:25]
+  wire [7:0] dccm_io_wdata_i_2; // @[Ibtida_top_dffram_cv.scala 17:25]
+  wire [7:0] dccm_io_wdata_i_3; // @[Ibtida_top_dffram_cv.scala 17:25]
+  wire [7:0] dccm_io_rdata_o_0; // @[Ibtida_top_dffram_cv.scala 17:25]
+  wire [7:0] dccm_io_rdata_o_1; // @[Ibtida_top_dffram_cv.scala 17:25]
+  wire [7:0] dccm_io_rdata_o_2; // @[Ibtida_top_dffram_cv.scala 17:25]
+  wire [7:0] dccm_io_rdata_o_3; // @[Ibtida_top_dffram_cv.scala 17:25]
+  wire [15:0] _T_6 = {dccm_io_rdata_o_1,dccm_io_rdata_o_0}; // @[Ibtida_top_dffram_cv.scala 41:54]
+  wire [15:0] _T_7 = {dccm_io_rdata_o_3,dccm_io_rdata_o_2}; // @[Ibtida_top_dffram_cv.scala 41:54]
+  Ibtida_top ibtidaTop ( // @[Ibtida_top_dffram_cv.scala 15:25]
     .clock(ibtidaTop_clock),
     .reset(ibtidaTop_reset),
     .io_rx_i(ibtidaTop_io_rx_i),
+    .io_CLK_PER_BIT(ibtidaTop_io_CLK_PER_BIT),
     .io_gpio_i(ibtidaTop_io_gpio_i),
     .io_gpio_o(ibtidaTop_io_gpio_o),
     .io_gpio_en_o(ibtidaTop_io_gpio_en_o),
@@ -8941,7 +9032,7 @@ module Ibtida_top_dffram_cv(
     .io_dccm_addr_o(ibtidaTop_io_dccm_addr_o),
     .io_dccm_rdata_i(ibtidaTop_io_dccm_rdata_i)
   );
-  InstMem iccm ( // @[Ibtida_top_dffram_cv.scala 15:25]
+  InstMem iccm ( // @[Ibtida_top_dffram_cv.scala 16:25]
     .clock(iccm_clock),
     .io_we_i_0(iccm_io_we_i_0),
     .io_we_i_1(iccm_io_we_i_1),
@@ -8951,7 +9042,7 @@ module Ibtida_top_dffram_cv(
     .io_wdata_i(iccm_io_wdata_i),
     .io_rdata_o(iccm_io_rdata_o)
   );
-  DataMem dccm ( // @[Ibtida_top_dffram_cv.scala 16:25]
+  DataMem dccm ( // @[Ibtida_top_dffram_cv.scala 17:25]
     .clock(dccm_clock),
     .io_we_i_0(dccm_io_we_i_0),
     .io_we_i_1(dccm_io_we_i_1),
@@ -8967,29 +9058,30 @@ module Ibtida_top_dffram_cv(
     .io_rdata_o_2(dccm_io_rdata_o_2),
     .io_rdata_o_3(dccm_io_rdata_o_3)
   );
-  assign io_gpio_o = ibtidaTop_io_gpio_o[29:0]; // @[Ibtida_top_dffram_cv.scala 21:13]
-  assign io_gpio_en_o = ibtidaTop_io_gpio_en_o[29:0]; // @[Ibtida_top_dffram_cv.scala 22:16]
+  assign io_gpio_o = ibtidaTop_io_gpio_o[29:0]; // @[Ibtida_top_dffram_cv.scala 23:13]
+  assign io_gpio_en_o = ibtidaTop_io_gpio_en_o[29:0]; // @[Ibtida_top_dffram_cv.scala 24:16]
   assign ibtidaTop_clock = clock;
   assign ibtidaTop_reset = reset;
-  assign ibtidaTop_io_rx_i = io_rx_i; // @[Ibtida_top_dffram_cv.scala 19:21]
-  assign ibtidaTop_io_gpio_i = {{2'd0}, io_gpio_i}; // @[Ibtida_top_dffram_cv.scala 20:23]
-  assign ibtidaTop_io_iccm_rdata_i = iccm_io_rdata_o; // @[Ibtida_top_dffram_cv.scala 29:29]
-  assign ibtidaTop_io_dccm_rdata_i = {_T_7,_T_6}; // @[Ibtida_top_dffram_cv.scala 39:29]
+  assign ibtidaTop_io_rx_i = io_rx_i; // @[Ibtida_top_dffram_cv.scala 20:21]
+  assign ibtidaTop_io_CLK_PER_BIT = io_CLK_PER_BIT; // @[Ibtida_top_dffram_cv.scala 21:28]
+  assign ibtidaTop_io_gpio_i = {{2'd0}, io_gpio_i}; // @[Ibtida_top_dffram_cv.scala 22:23]
+  assign ibtidaTop_io_iccm_rdata_i = iccm_io_rdata_o; // @[Ibtida_top_dffram_cv.scala 31:29]
+  assign ibtidaTop_io_dccm_rdata_i = {_T_7,_T_6}; // @[Ibtida_top_dffram_cv.scala 41:29]
   assign iccm_clock = clock;
-  assign iccm_io_we_i_0 = ibtidaTop_io_iccm_we_o_0; // @[Ibtida_top_dffram_cv.scala 26:16]
-  assign iccm_io_we_i_1 = ibtidaTop_io_iccm_we_o_1; // @[Ibtida_top_dffram_cv.scala 26:16]
-  assign iccm_io_we_i_2 = ibtidaTop_io_iccm_we_o_2; // @[Ibtida_top_dffram_cv.scala 26:16]
-  assign iccm_io_we_i_3 = ibtidaTop_io_iccm_we_o_3; // @[Ibtida_top_dffram_cv.scala 26:16]
-  assign iccm_io_addr_i = ibtidaTop_io_iccm_addr_o[5:0]; // @[Ibtida_top_dffram_cv.scala 27:18]
-  assign iccm_io_wdata_i = ibtidaTop_io_iccm_wdata_o; // @[Ibtida_top_dffram_cv.scala 28:19]
+  assign iccm_io_we_i_0 = ibtidaTop_io_iccm_we_o_0; // @[Ibtida_top_dffram_cv.scala 28:16]
+  assign iccm_io_we_i_1 = ibtidaTop_io_iccm_we_o_1; // @[Ibtida_top_dffram_cv.scala 28:16]
+  assign iccm_io_we_i_2 = ibtidaTop_io_iccm_we_o_2; // @[Ibtida_top_dffram_cv.scala 28:16]
+  assign iccm_io_we_i_3 = ibtidaTop_io_iccm_we_o_3; // @[Ibtida_top_dffram_cv.scala 28:16]
+  assign iccm_io_addr_i = ibtidaTop_io_iccm_addr_o[5:0]; // @[Ibtida_top_dffram_cv.scala 29:18]
+  assign iccm_io_wdata_i = ibtidaTop_io_iccm_wdata_o; // @[Ibtida_top_dffram_cv.scala 30:19]
   assign dccm_clock = clock;
-  assign dccm_io_we_i_0 = ibtidaTop_io_dccm_we_o_0; // @[Ibtida_top_dffram_cv.scala 33:16]
-  assign dccm_io_we_i_1 = ibtidaTop_io_dccm_we_o_1; // @[Ibtida_top_dffram_cv.scala 33:16]
-  assign dccm_io_we_i_2 = ibtidaTop_io_dccm_we_o_2; // @[Ibtida_top_dffram_cv.scala 33:16]
-  assign dccm_io_we_i_3 = ibtidaTop_io_dccm_we_o_3; // @[Ibtida_top_dffram_cv.scala 33:16]
-  assign dccm_io_addr_i = ibtidaTop_io_dccm_addr_o[5:0]; // @[Ibtida_top_dffram_cv.scala 34:18]
-  assign dccm_io_wdata_i_0 = ibtidaTop_io_dccm_wdata_o[7:0]; // @[Ibtida_top_dffram_cv.scala 35:36]
-  assign dccm_io_wdata_i_1 = ibtidaTop_io_dccm_wdata_o[15:8]; // @[Ibtida_top_dffram_cv.scala 36:36]
-  assign dccm_io_wdata_i_2 = ibtidaTop_io_dccm_wdata_o[23:16]; // @[Ibtida_top_dffram_cv.scala 37:36]
-  assign dccm_io_wdata_i_3 = ibtidaTop_io_dccm_wdata_o[31:24]; // @[Ibtida_top_dffram_cv.scala 38:36]
+  assign dccm_io_we_i_0 = ibtidaTop_io_dccm_we_o_0; // @[Ibtida_top_dffram_cv.scala 35:16]
+  assign dccm_io_we_i_1 = ibtidaTop_io_dccm_we_o_1; // @[Ibtida_top_dffram_cv.scala 35:16]
+  assign dccm_io_we_i_2 = ibtidaTop_io_dccm_we_o_2; // @[Ibtida_top_dffram_cv.scala 35:16]
+  assign dccm_io_we_i_3 = ibtidaTop_io_dccm_we_o_3; // @[Ibtida_top_dffram_cv.scala 35:16]
+  assign dccm_io_addr_i = ibtidaTop_io_dccm_addr_o[5:0]; // @[Ibtida_top_dffram_cv.scala 36:18]
+  assign dccm_io_wdata_i_0 = ibtidaTop_io_dccm_wdata_o[7:0]; // @[Ibtida_top_dffram_cv.scala 37:36]
+  assign dccm_io_wdata_i_1 = ibtidaTop_io_dccm_wdata_o[15:8]; // @[Ibtida_top_dffram_cv.scala 38:36]
+  assign dccm_io_wdata_i_2 = ibtidaTop_io_dccm_wdata_o[23:16]; // @[Ibtida_top_dffram_cv.scala 39:36]
+  assign dccm_io_wdata_i_3 = ibtidaTop_io_dccm_wdata_o[31:24]; // @[Ibtida_top_dffram_cv.scala 40:36]
 endmodule
