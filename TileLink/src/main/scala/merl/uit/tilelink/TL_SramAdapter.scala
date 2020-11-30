@@ -49,7 +49,8 @@ class TL_SramAdapter(sramAw: Int, sramDw: Int, forFetch: Bool = false.B)(implici
   rd_req := a_ack && (io.tl_i.a_opcode === TL_A_Opcode.get)
 
  // io.we_o := wr_req && !err_internal
-  io.addr_o := Cat(io.tl_i.a_address(sramAw-1, 2), 0.U(2.W)) // word aligned address
+//  io.addr_o := Cat(io.tl_i.a_address(sramAw-1, 2), 0.U(2.W)) // word aligned address
+  io.addr_o := io.tl_i.a_address >> 2
   io.wdata_o := io.tl_i.a_data
 
 
