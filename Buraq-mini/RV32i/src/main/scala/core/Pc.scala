@@ -10,7 +10,7 @@ class Pc extends Module {
     })
 
 //    val reg = RegInit(256.S(32.W) - 4.S(32.W))
-val reg = RegInit(0.S(32.W) - 4.S(32.W))
+val reg = RegInit(48.S(32.W) - 4.S(32.W))   // 44 -> 0x30 is base address of program memory
     reg := io.in
     io.pc4 := reg + 4.S
     io.out := reg
