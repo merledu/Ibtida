@@ -981,7 +981,7 @@ module Pc(
 `ifdef RANDOMIZE_REG_INIT
   reg [31:0] _RAND_0;
 `endif // RANDOMIZE_REG_INIT
-  wire [31:0] _T_2 = 32'sh0 - 32'sh4; // @[Pc.scala 13:29]
+  wire [31:0] _T_2 = 32'sh30 - 32'sh4; // @[Pc.scala 13:30]
   reg [31:0] reg_; // @[Pc.scala 13:18]
   assign io_out = reg_; // @[Pc.scala 16:12]
   assign io_pc4 = $signed(reg_) + 32'sh4; // @[Pc.scala 15:12]
@@ -7757,36 +7757,36 @@ module TL_SramAdapter(
   output        io_tl_o_d_valid,
   output [31:0] io_tl_o_d_data,
   output        io_tl_o_a_ready,
-  output [7:0]  io_addr_o,
+  output [5:0]  io_addr_o,
   input  [31:0] io_rdata_i
 );
 `ifdef RANDOMIZE_REG_INIT
   reg [31:0] _RAND_0;
 `endif // RANDOMIZE_REG_INIT
-  wire  tlErr_io_tl_i_a_valid; // @[TL_SramAdapter.scala 101:21]
-  wire [2:0] tlErr_io_tl_i_a_opcode; // @[TL_SramAdapter.scala 101:21]
-  wire [31:0] tlErr_io_tl_i_a_address; // @[TL_SramAdapter.scala 101:21]
-  wire [3:0] tlErr_io_tl_i_a_mask; // @[TL_SramAdapter.scala 101:21]
-  wire  tlErr_io_err_o; // @[TL_SramAdapter.scala 101:21]
+  wire  tlErr_io_tl_i_a_valid; // @[TL_SramAdapter.scala 102:21]
+  wire [2:0] tlErr_io_tl_i_a_opcode; // @[TL_SramAdapter.scala 102:21]
+  wire [31:0] tlErr_io_tl_i_a_address; // @[TL_SramAdapter.scala 102:21]
+  wire [3:0] tlErr_io_tl_i_a_mask; // @[TL_SramAdapter.scala 102:21]
+  wire  tlErr_io_err_o; // @[TL_SramAdapter.scala 102:21]
   reg  outstanding; // @[TL_SramAdapter.scala 42:28]
   wire  a_ack = io_tl_i_a_valid & io_tl_o_a_ready; // @[TL_SramAdapter.scala 45:28]
-  wire  _GEN_4 = io_tl_o_d_valid ? 1'h0 : outstanding; // @[TL_SramAdapter.scala 72:22]
-  wire  _GEN_5 = a_ack | _GEN_4; // @[TL_SramAdapter.scala 66:15]
-  TL_Err tlErr ( // @[TL_SramAdapter.scala 101:21]
+  wire  _GEN_4 = io_tl_o_d_valid ? 1'h0 : outstanding; // @[TL_SramAdapter.scala 73:22]
+  wire  _GEN_5 = a_ack | _GEN_4; // @[TL_SramAdapter.scala 67:15]
+  TL_Err tlErr ( // @[TL_SramAdapter.scala 102:21]
     .io_tl_i_a_valid(tlErr_io_tl_i_a_valid),
     .io_tl_i_a_opcode(tlErr_io_tl_i_a_opcode),
     .io_tl_i_a_address(tlErr_io_tl_i_a_address),
     .io_tl_i_a_mask(tlErr_io_tl_i_a_mask),
     .io_err_o(tlErr_io_err_o)
   );
-  assign io_tl_o_d_valid = outstanding; // @[TL_SramAdapter.scala 83:19]
-  assign io_tl_o_d_data = io_rdata_i; // @[TL_SramAdapter.scala 89:18]
-  assign io_tl_o_a_ready = 1'h1; // @[TL_SramAdapter.scala 82:19]
-  assign io_addr_o = {io_tl_i_a_address[7:2],2'h0}; // @[TL_SramAdapter.scala 52:13]
-  assign tlErr_io_tl_i_a_valid = io_tl_i_a_valid; // @[TL_SramAdapter.scala 102:17]
-  assign tlErr_io_tl_i_a_opcode = io_tl_i_a_opcode; // @[TL_SramAdapter.scala 102:17]
-  assign tlErr_io_tl_i_a_address = io_tl_i_a_address; // @[TL_SramAdapter.scala 102:17]
-  assign tlErr_io_tl_i_a_mask = io_tl_i_a_mask; // @[TL_SramAdapter.scala 102:17]
+  assign io_tl_o_d_valid = outstanding; // @[TL_SramAdapter.scala 84:19]
+  assign io_tl_o_d_data = io_rdata_i; // @[TL_SramAdapter.scala 90:18]
+  assign io_tl_o_a_ready = 1'h1; // @[TL_SramAdapter.scala 83:19]
+  assign io_addr_o = io_tl_i_a_address[7:2]; // @[TL_SramAdapter.scala 53:13]
+  assign tlErr_io_tl_i_a_valid = io_tl_i_a_valid; // @[TL_SramAdapter.scala 103:17]
+  assign tlErr_io_tl_i_a_opcode = io_tl_i_a_opcode; // @[TL_SramAdapter.scala 103:17]
+  assign tlErr_io_tl_i_a_address = io_tl_i_a_address; // @[TL_SramAdapter.scala 103:17]
+  assign tlErr_io_tl_i_a_mask = io_tl_i_a_mask; // @[TL_SramAdapter.scala 103:17]
 `ifdef RANDOMIZE_GARBAGE_ASSIGN
 `define RANDOMIZE
 `endif
@@ -7854,7 +7854,7 @@ module TL_SramAdapter_1(
   output        io_we_o_1,
   output        io_we_o_2,
   output        io_we_o_3,
-  output [7:0]  io_addr_o,
+  output [5:0]  io_addr_o,
   output [31:0] io_wdata_o,
   input  [31:0] io_rdata_i
 );
@@ -7862,11 +7862,11 @@ module TL_SramAdapter_1(
   reg [31:0] _RAND_0;
   reg [31:0] _RAND_1;
 `endif // RANDOMIZE_REG_INIT
-  wire  tlErr_io_tl_i_a_valid; // @[TL_SramAdapter.scala 101:21]
-  wire [2:0] tlErr_io_tl_i_a_opcode; // @[TL_SramAdapter.scala 101:21]
-  wire [31:0] tlErr_io_tl_i_a_address; // @[TL_SramAdapter.scala 101:21]
-  wire [3:0] tlErr_io_tl_i_a_mask; // @[TL_SramAdapter.scala 101:21]
-  wire  tlErr_io_err_o; // @[TL_SramAdapter.scala 101:21]
+  wire  tlErr_io_tl_i_a_valid; // @[TL_SramAdapter.scala 102:21]
+  wire [2:0] tlErr_io_tl_i_a_opcode; // @[TL_SramAdapter.scala 102:21]
+  wire [31:0] tlErr_io_tl_i_a_address; // @[TL_SramAdapter.scala 102:21]
+  wire [3:0] tlErr_io_tl_i_a_mask; // @[TL_SramAdapter.scala 102:21]
+  wire  tlErr_io_err_o; // @[TL_SramAdapter.scala 102:21]
   reg  error; // @[TL_SramAdapter.scala 29:22]
   reg  outstanding; // @[TL_SramAdapter.scala 42:28]
   wire  a_ack = io_tl_i_a_valid & io_tl_o_a_ready; // @[TL_SramAdapter.scala 45:28]
@@ -7874,35 +7874,35 @@ module TL_SramAdapter_1(
   wire  _T_3 = io_tl_i_a_opcode == 3'h1; // @[TL_SramAdapter.scala 48:91]
   wire  _T_4 = _T_2 | _T_3; // @[TL_SramAdapter.scala 48:70]
   wire  wr_req = a_ack & _T_4; // @[TL_SramAdapter.scala 48:19]
-  wire  _T_30 = |io_tl_i_a_address[1:0]; // @[TL_SramAdapter.scala 95:46]
-  wire  addr_align_err = wr_req & _T_30; // @[TL_SramAdapter.scala 94:16]
-  wire  tl_err = tlErr_io_err_o; // @[TL_SramAdapter.scala 33:20 TL_SramAdapter.scala 103:10]
-  wire  err_internal = addr_align_err | tl_err; // @[TL_SramAdapter.scala 92:34]
-  wire  _T_10 = ~err_internal; // @[TL_SramAdapter.scala 56:18]
-  wire  _T_11 = wr_req & _T_10; // @[TL_SramAdapter.scala 56:15]
-  wire  _GEN_4 = io_tl_o_d_valid ? 1'h0 : outstanding; // @[TL_SramAdapter.scala 72:22]
-  wire  _GEN_5 = a_ack | _GEN_4; // @[TL_SramAdapter.scala 66:15]
-  wire [31:0] _T_24 = error ? 32'hffffffff : io_rdata_i; // @[TL_SramAdapter.scala 77:17]
-  TL_Err tlErr ( // @[TL_SramAdapter.scala 101:21]
+  wire  _T_29 = |io_tl_i_a_address[1:0]; // @[TL_SramAdapter.scala 96:46]
+  wire  addr_align_err = wr_req & _T_29; // @[TL_SramAdapter.scala 95:16]
+  wire  tl_err = tlErr_io_err_o; // @[TL_SramAdapter.scala 33:20 TL_SramAdapter.scala 104:10]
+  wire  err_internal = addr_align_err | tl_err; // @[TL_SramAdapter.scala 93:34]
+  wire  _T_9 = ~err_internal; // @[TL_SramAdapter.scala 57:18]
+  wire  _T_10 = wr_req & _T_9; // @[TL_SramAdapter.scala 57:15]
+  wire  _GEN_4 = io_tl_o_d_valid ? 1'h0 : outstanding; // @[TL_SramAdapter.scala 73:22]
+  wire  _GEN_5 = a_ack | _GEN_4; // @[TL_SramAdapter.scala 67:15]
+  wire [31:0] _T_23 = error ? 32'hffffffff : io_rdata_i; // @[TL_SramAdapter.scala 78:17]
+  TL_Err tlErr ( // @[TL_SramAdapter.scala 102:21]
     .io_tl_i_a_valid(tlErr_io_tl_i_a_valid),
     .io_tl_i_a_opcode(tlErr_io_tl_i_a_opcode),
     .io_tl_i_a_address(tlErr_io_tl_i_a_address),
     .io_tl_i_a_mask(tlErr_io_tl_i_a_mask),
     .io_err_o(tlErr_io_err_o)
   );
-  assign io_tl_o_d_valid = outstanding; // @[TL_SramAdapter.scala 83:19]
-  assign io_tl_o_d_data = outstanding ? _T_24 : 32'h0; // @[TL_SramAdapter.scala 89:18]
-  assign io_tl_o_a_ready = ~outstanding; // @[TL_SramAdapter.scala 82:19]
-  assign io_we_o_0 = _T_11 & io_tl_i_a_mask[0]; // @[TL_SramAdapter.scala 58:18 TL_SramAdapter.scala 62:18]
-  assign io_we_o_1 = _T_11 & io_tl_i_a_mask[1]; // @[TL_SramAdapter.scala 58:18 TL_SramAdapter.scala 62:18]
-  assign io_we_o_2 = _T_11 & io_tl_i_a_mask[2]; // @[TL_SramAdapter.scala 58:18 TL_SramAdapter.scala 62:18]
-  assign io_we_o_3 = _T_11 & io_tl_i_a_mask[3]; // @[TL_SramAdapter.scala 58:18 TL_SramAdapter.scala 62:18]
-  assign io_addr_o = {io_tl_i_a_address[7:2],2'h0}; // @[TL_SramAdapter.scala 52:13]
-  assign io_wdata_o = io_tl_i_a_data; // @[TL_SramAdapter.scala 53:14]
-  assign tlErr_io_tl_i_a_valid = io_tl_i_a_valid; // @[TL_SramAdapter.scala 102:17]
-  assign tlErr_io_tl_i_a_opcode = io_tl_i_a_opcode; // @[TL_SramAdapter.scala 102:17]
-  assign tlErr_io_tl_i_a_address = io_tl_i_a_address; // @[TL_SramAdapter.scala 102:17]
-  assign tlErr_io_tl_i_a_mask = io_tl_i_a_mask; // @[TL_SramAdapter.scala 102:17]
+  assign io_tl_o_d_valid = outstanding; // @[TL_SramAdapter.scala 84:19]
+  assign io_tl_o_d_data = outstanding ? _T_23 : 32'h0; // @[TL_SramAdapter.scala 90:18]
+  assign io_tl_o_a_ready = ~outstanding; // @[TL_SramAdapter.scala 83:19]
+  assign io_we_o_0 = _T_10 & io_tl_i_a_mask[0]; // @[TL_SramAdapter.scala 59:18 TL_SramAdapter.scala 63:18]
+  assign io_we_o_1 = _T_10 & io_tl_i_a_mask[1]; // @[TL_SramAdapter.scala 59:18 TL_SramAdapter.scala 63:18]
+  assign io_we_o_2 = _T_10 & io_tl_i_a_mask[2]; // @[TL_SramAdapter.scala 59:18 TL_SramAdapter.scala 63:18]
+  assign io_we_o_3 = _T_10 & io_tl_i_a_mask[3]; // @[TL_SramAdapter.scala 59:18 TL_SramAdapter.scala 63:18]
+  assign io_addr_o = io_tl_i_a_address[7:2]; // @[TL_SramAdapter.scala 53:13]
+  assign io_wdata_o = io_tl_i_a_data; // @[TL_SramAdapter.scala 54:14]
+  assign tlErr_io_tl_i_a_valid = io_tl_i_a_valid; // @[TL_SramAdapter.scala 103:17]
+  assign tlErr_io_tl_i_a_opcode = io_tl_i_a_opcode; // @[TL_SramAdapter.scala 103:17]
+  assign tlErr_io_tl_i_a_address = io_tl_i_a_address; // @[TL_SramAdapter.scala 103:17]
+  assign tlErr_io_tl_i_a_mask = io_tl_i_a_mask; // @[TL_SramAdapter.scala 103:17]
 `ifdef RANDOMIZE_GARBAGE_ASSIGN
 `define RANDOMIZE
 `endif
@@ -8207,7 +8207,7 @@ module Ibtida_top(
   wire  iccm_tl_device_io_tl_o_d_valid; // @[Ibtida_top.scala 37:51]
   wire [31:0] iccm_tl_device_io_tl_o_d_data; // @[Ibtida_top.scala 37:51]
   wire  iccm_tl_device_io_tl_o_a_ready; // @[Ibtida_top.scala 37:51]
-  wire [7:0] iccm_tl_device_io_addr_o; // @[Ibtida_top.scala 37:51]
+  wire [5:0] iccm_tl_device_io_addr_o; // @[Ibtida_top.scala 37:51]
   wire [31:0] iccm_tl_device_io_rdata_i; // @[Ibtida_top.scala 37:51]
   wire  dccm_tl_device_clock; // @[Ibtida_top.scala 38:51]
   wire  dccm_tl_device_reset; // @[Ibtida_top.scala 38:51]
@@ -8223,7 +8223,7 @@ module Ibtida_top(
   wire  dccm_tl_device_io_we_o_1; // @[Ibtida_top.scala 38:51]
   wire  dccm_tl_device_io_we_o_2; // @[Ibtida_top.scala 38:51]
   wire  dccm_tl_device_io_we_o_3; // @[Ibtida_top.scala 38:51]
-  wire [7:0] dccm_tl_device_io_addr_o; // @[Ibtida_top.scala 38:51]
+  wire [5:0] dccm_tl_device_io_addr_o; // @[Ibtida_top.scala 38:51]
   wire [31:0] dccm_tl_device_io_wdata_o; // @[Ibtida_top.scala 38:51]
   wire [31:0] dccm_tl_device_io_rdata_i; // @[Ibtida_top.scala 38:51]
   wire  tl_switch_1to2_clock; // @[Ibtida_top.scala 39:51]
@@ -8261,25 +8261,24 @@ module Ibtida_top(
   wire  _T_4 = ~reset; // @[Ibtida_top.scala 59:49]
   wire  _T_5 = reset_reg & _T_4; // @[Ibtida_top.scala 59:31]
   wire  _T_6 = state_reg == 2'h1; // @[Ibtida_top.scala 76:25]
-  wire [15:0] _T_8 = {uart_ctrl_io_addr_o, 2'h0}; // @[Ibtida_top.scala 109:89]
-  wire [15:0] _T_9 = uart_ctrl_io_valid ? _T_8 : 16'h0; // @[Ibtida_top.scala 109:48]
-  wire  _T_10 = state_reg == 2'h2; // @[Ibtida_top.scala 111:25]
-  wire  _T_11 = state_reg == 2'h3; // @[Ibtida_top.scala 135:25]
-  wire [7:0] _GEN_4 = iccm_tl_device_io_addr_o; // @[Ibtida_top.scala 135:42]
-  wire [31:0] _GEN_10 = _T_10 ? rx_addr_reg : {{24'd0}, _GEN_4}; // @[Ibtida_top.scala 111:41]
-  wire  _GEN_13 = _T_6 ? 1'h0 : _T_10; // @[Ibtida_top.scala 76:40]
-  wire  _GEN_16 = _T_6 | _T_10; // @[Ibtida_top.scala 76:40]
-  wire [31:0] instr_addr = _T_1 ? {{24'd0}, iccm_tl_device_io_addr_o} : _GEN_10; // @[Ibtida_top.scala 57:28]
-  wire [31:0] _T_13 = core_loadStore_tl_host_io_tl_o_a_address & 32'hfffff000; // @[Ibtida_top.scala 169:14]
-  wire  _T_14 = _T_13 == 32'h40010000; // @[Ibtida_top.scala 169:44]
-  wire [31:0] _T_16 = core_loadStore_tl_host_io_tl_o_a_address & 32'hffffff00; // @[Ibtida_top.scala 173:20]
-  wire  _T_17 = _T_16 == 32'h10000000; // @[Ibtida_top.scala 173:50]
-  wire [1:0] _GEN_26 = _T_17 ? 2'h0 : 2'h2; // @[Ibtida_top.scala 173:82]
-  wire [15:0] _T_23 = {core_io_data_wdata_o_1,core_io_data_wdata_o_0}; // @[Ibtida_top.scala 250:72]
-  wire [15:0] _T_24 = {core_io_data_wdata_o_3,core_io_data_wdata_o_2}; // @[Ibtida_top.scala 250:72]
-  wire [1:0] _T_26 = {core_io_data_be_o_1,core_io_data_be_o_0}; // @[Cat.scala 29:58]
-  wire [1:0] _T_27 = {core_io_data_be_o_3,core_io_data_be_o_2}; // @[Cat.scala 29:58]
-  wire [3:0] _T_35 = {io_dccm_rdata_i[3],io_dccm_rdata_i[2],io_dccm_rdata_i[1],io_dccm_rdata_i[0]}; // @[Cat.scala 29:58]
+  wire [13:0] _T_8 = uart_ctrl_io_valid ? uart_ctrl_io_addr_o : 14'h0; // @[Ibtida_top.scala 110:48]
+  wire  _T_9 = state_reg == 2'h2; // @[Ibtida_top.scala 112:25]
+  wire  _T_10 = state_reg == 2'h3; // @[Ibtida_top.scala 136:25]
+  wire [5:0] _GEN_4 = iccm_tl_device_io_addr_o; // @[Ibtida_top.scala 136:42]
+  wire [31:0] _GEN_10 = _T_9 ? rx_addr_reg : {{26'd0}, _GEN_4}; // @[Ibtida_top.scala 112:41]
+  wire  _GEN_13 = _T_6 ? 1'h0 : _T_9; // @[Ibtida_top.scala 76:40]
+  wire  _GEN_16 = _T_6 | _T_9; // @[Ibtida_top.scala 76:40]
+  wire [31:0] instr_addr = _T_1 ? {{26'd0}, iccm_tl_device_io_addr_o} : _GEN_10; // @[Ibtida_top.scala 57:28]
+  wire [31:0] _T_12 = core_loadStore_tl_host_io_tl_o_a_address & 32'hfffff000; // @[Ibtida_top.scala 170:14]
+  wire  _T_13 = _T_12 == 32'h40010000; // @[Ibtida_top.scala 170:44]
+  wire [31:0] _T_15 = core_loadStore_tl_host_io_tl_o_a_address & 32'hffffff03; // @[Ibtida_top.scala 174:20]
+  wire  _T_16 = _T_15 == 32'h10000000; // @[Ibtida_top.scala 174:50]
+  wire [1:0] _GEN_26 = _T_16 ? 2'h0 : 2'h2; // @[Ibtida_top.scala 174:82]
+  wire [15:0] _T_22 = {core_io_data_wdata_o_1,core_io_data_wdata_o_0}; // @[Ibtida_top.scala 251:72]
+  wire [15:0] _T_23 = {core_io_data_wdata_o_3,core_io_data_wdata_o_2}; // @[Ibtida_top.scala 251:72]
+  wire [1:0] _T_25 = {core_io_data_be_o_1,core_io_data_be_o_0}; // @[Cat.scala 29:58]
+  wire [1:0] _T_26 = {core_io_data_be_o_3,core_io_data_be_o_2}; // @[Cat.scala 29:58]
+  wire [3:0] _T_34 = {io_dccm_rdata_i[3],io_dccm_rdata_i[2],io_dccm_rdata_i[1],io_dccm_rdata_i[0]}; // @[Cat.scala 29:58]
   UartController uart_ctrl ( // @[Ibtida_top.scala 29:25]
     .clock(uart_ctrl_clock),
     .reset(uart_ctrl_reset),
@@ -8428,87 +8427,87 @@ module Ibtida_top(
     .io_tl_d_i_1_a_ready(tl_switch_1to2_io_tl_d_i_1_a_ready),
     .io_dev_sel(tl_switch_1to2_io_dev_sel)
   );
-  assign io_gpio_o = gpio_io_cio_gpio_o; // @[Ibtida_top.scala 278:36]
-  assign io_gpio_en_o = ~gpio_io_cio_gpio_en_o; // @[Ibtida_top.scala 279:36]
-  assign io_iccm_we_o_0 = _T_1 ? 1'h0 : _GEN_13; // @[Ibtida_top.scala 229:36]
-  assign io_iccm_we_o_1 = _T_1 ? 1'h0 : _GEN_13; // @[Ibtida_top.scala 229:36]
-  assign io_iccm_we_o_2 = _T_1 ? 1'h0 : _GEN_13; // @[Ibtida_top.scala 229:36]
-  assign io_iccm_we_o_3 = _T_1 ? 1'h0 : _GEN_13; // @[Ibtida_top.scala 229:36]
-  assign io_iccm_wdata_o = rx_data_reg; // @[Ibtida_top.scala 231:36]
-  assign io_iccm_addr_o = instr_addr[7:0]; // @[Ibtida_top.scala 230:36]
-  assign io_dccm_we_o_0 = dccm_tl_device_io_we_o_0; // @[Ibtida_top.scala 263:36]
-  assign io_dccm_we_o_1 = dccm_tl_device_io_we_o_1; // @[Ibtida_top.scala 263:36]
-  assign io_dccm_we_o_2 = dccm_tl_device_io_we_o_2; // @[Ibtida_top.scala 263:36]
-  assign io_dccm_we_o_3 = dccm_tl_device_io_we_o_3; // @[Ibtida_top.scala 263:36]
-  assign io_dccm_wdata_o = dccm_tl_device_io_wdata_o; // @[Ibtida_top.scala 262:36]
-  assign io_dccm_addr_o = dccm_tl_device_io_addr_o; // @[Ibtida_top.scala 261:36]
+  assign io_gpio_o = gpio_io_cio_gpio_o; // @[Ibtida_top.scala 279:36]
+  assign io_gpio_en_o = ~gpio_io_cio_gpio_en_o; // @[Ibtida_top.scala 280:36]
+  assign io_iccm_we_o_0 = _T_1 ? 1'h0 : _GEN_13; // @[Ibtida_top.scala 230:36]
+  assign io_iccm_we_o_1 = _T_1 ? 1'h0 : _GEN_13; // @[Ibtida_top.scala 230:36]
+  assign io_iccm_we_o_2 = _T_1 ? 1'h0 : _GEN_13; // @[Ibtida_top.scala 230:36]
+  assign io_iccm_we_o_3 = _T_1 ? 1'h0 : _GEN_13; // @[Ibtida_top.scala 230:36]
+  assign io_iccm_wdata_o = rx_data_reg; // @[Ibtida_top.scala 232:36]
+  assign io_iccm_addr_o = instr_addr[7:0]; // @[Ibtida_top.scala 231:36]
+  assign io_dccm_we_o_0 = dccm_tl_device_io_we_o_0; // @[Ibtida_top.scala 264:36]
+  assign io_dccm_we_o_1 = dccm_tl_device_io_we_o_1; // @[Ibtida_top.scala 264:36]
+  assign io_dccm_we_o_2 = dccm_tl_device_io_we_o_2; // @[Ibtida_top.scala 264:36]
+  assign io_dccm_we_o_3 = dccm_tl_device_io_we_o_3; // @[Ibtida_top.scala 264:36]
+  assign io_dccm_wdata_o = dccm_tl_device_io_wdata_o; // @[Ibtida_top.scala 263:36]
+  assign io_dccm_addr_o = {{2'd0}, dccm_tl_device_io_addr_o}; // @[Ibtida_top.scala 262:36]
   assign uart_ctrl_clock = clock;
   assign uart_ctrl_reset = reset;
-  assign uart_ctrl_io_isStalled = _T_1 ? 1'h0 : _GEN_16; // @[Ibtida_top.scala 75:36 Ibtida_top.scala 102:36 Ibtida_top.scala 133:36 Ibtida_top.scala 143:36]
+  assign uart_ctrl_io_isStalled = _T_1 ? 1'h0 : _GEN_16; // @[Ibtida_top.scala 75:36 Ibtida_top.scala 102:36 Ibtida_top.scala 134:36 Ibtida_top.scala 144:36]
   assign uart_ctrl_io_rxd = io_rx_i; // @[Ibtida_top.scala 51:36]
   assign core_clock = clock;
   assign core_reset = reset;
-  assign core_io_data_gnt_i = core_loadStore_tl_host_io_gnt_o; // @[Ibtida_top.scala 283:36]
-  assign core_io_data_rvalid_i = core_loadStore_tl_host_io_valid_o; // @[Ibtida_top.scala 284:36]
-  assign core_io_data_rdata_i = core_loadStore_tl_host_io_rdata_o; // @[Ibtida_top.scala 285:36]
-  assign core_io_instr_gnt_i = core_iccm_tl_host_io_gnt_o; // @[Ibtida_top.scala 241:36]
-  assign core_io_instr_rvalid_i = core_iccm_tl_host_io_valid_o; // @[Ibtida_top.scala 242:36]
-  assign core_io_instr_rdata_i = core_iccm_tl_host_io_rdata_o; // @[Ibtida_top.scala 240:36]
-  assign core_io_stall_core_i = _T_1 ? 1'h0 : _GEN_16; // @[Ibtida_top.scala 74:36 Ibtida_top.scala 101:36 Ibtida_top.scala 132:36 Ibtida_top.scala 142:36]
-  assign core_io_irq_external_i = |gpio_io_intr_gpio_o; // @[Ibtida_top.scala 282:36]
+  assign core_io_data_gnt_i = core_loadStore_tl_host_io_gnt_o; // @[Ibtida_top.scala 284:36]
+  assign core_io_data_rvalid_i = core_loadStore_tl_host_io_valid_o; // @[Ibtida_top.scala 285:36]
+  assign core_io_data_rdata_i = core_loadStore_tl_host_io_rdata_o; // @[Ibtida_top.scala 286:36]
+  assign core_io_instr_gnt_i = core_iccm_tl_host_io_gnt_o; // @[Ibtida_top.scala 242:36]
+  assign core_io_instr_rvalid_i = core_iccm_tl_host_io_valid_o; // @[Ibtida_top.scala 243:36]
+  assign core_io_instr_rdata_i = core_iccm_tl_host_io_rdata_o; // @[Ibtida_top.scala 241:36]
+  assign core_io_stall_core_i = _T_1 ? 1'h0 : _GEN_16; // @[Ibtida_top.scala 74:36 Ibtida_top.scala 101:36 Ibtida_top.scala 133:36 Ibtida_top.scala 143:36]
+  assign core_io_irq_external_i = |gpio_io_intr_gpio_o; // @[Ibtida_top.scala 283:36]
   assign gpio_clock = clock;
   assign gpio_reset = reset;
-  assign gpio_io_tl_i_a_valid = tl_switch_1to2_io_tl_d_o_1_a_valid; // @[Ibtida_top.scala 210:36]
-  assign gpio_io_tl_i_a_opcode = tl_switch_1to2_io_tl_d_o_1_a_opcode; // @[Ibtida_top.scala 210:36]
-  assign gpio_io_tl_i_a_address = tl_switch_1to2_io_tl_d_o_1_a_address; // @[Ibtida_top.scala 210:36]
-  assign gpio_io_tl_i_a_mask = tl_switch_1to2_io_tl_d_o_1_a_mask; // @[Ibtida_top.scala 210:36]
-  assign gpio_io_tl_i_a_data = tl_switch_1to2_io_tl_d_o_1_a_data; // @[Ibtida_top.scala 210:36]
-  assign gpio_io_cio_gpio_i = io_gpio_i; // @[Ibtida_top.scala 276:36]
-  assign core_iccm_tl_host_io_req_i = core_io_instr_req_o; // @[Ibtida_top.scala 219:36]
-  assign core_iccm_tl_host_io_addr_i = core_io_instr_addr_o; // @[Ibtida_top.scala 220:36]
-  assign core_iccm_tl_host_io_we_i = 1'h0; // @[Ibtida_top.scala 221:36]
-  assign core_iccm_tl_host_io_wdata_i = 32'h0; // @[Ibtida_top.scala 222:36]
-  assign core_iccm_tl_host_io_be_i = 4'hf; // @[Ibtida_top.scala 223:36]
-  assign core_iccm_tl_host_io_tl_i_d_valid = iccm_tl_device_io_tl_o_d_valid; // @[Ibtida_top.scala 226:36]
-  assign core_iccm_tl_host_io_tl_i_d_data = iccm_tl_device_io_tl_o_d_data; // @[Ibtida_top.scala 226:36]
-  assign core_iccm_tl_host_io_tl_i_a_ready = 1'h1; // @[Ibtida_top.scala 226:36]
-  assign core_loadStore_tl_host_io_req_i = core_io_data_req_o; // @[Ibtida_top.scala 247:36]
-  assign core_loadStore_tl_host_io_addr_i = core_io_data_addr_o; // @[Ibtida_top.scala 248:36]
-  assign core_loadStore_tl_host_io_we_i = core_io_data_we_o; // @[Ibtida_top.scala 249:36]
-  assign core_loadStore_tl_host_io_wdata_i = {_T_24,_T_23}; // @[Ibtida_top.scala 250:36]
-  assign core_loadStore_tl_host_io_be_i = {_T_27,_T_26}; // @[Ibtida_top.scala 251:36]
-  assign core_loadStore_tl_host_io_tl_i_d_valid = tl_switch_1to2_io_tl_h_o_d_valid; // @[Ibtida_top.scala 196:36]
-  assign core_loadStore_tl_host_io_tl_i_d_data = tl_switch_1to2_io_tl_h_o_d_data; // @[Ibtida_top.scala 196:36]
-  assign core_loadStore_tl_host_io_tl_i_a_ready = tl_switch_1to2_io_tl_h_o_a_ready; // @[Ibtida_top.scala 196:36]
+  assign gpio_io_tl_i_a_valid = tl_switch_1to2_io_tl_d_o_1_a_valid; // @[Ibtida_top.scala 211:36]
+  assign gpio_io_tl_i_a_opcode = tl_switch_1to2_io_tl_d_o_1_a_opcode; // @[Ibtida_top.scala 211:36]
+  assign gpio_io_tl_i_a_address = tl_switch_1to2_io_tl_d_o_1_a_address; // @[Ibtida_top.scala 211:36]
+  assign gpio_io_tl_i_a_mask = tl_switch_1to2_io_tl_d_o_1_a_mask; // @[Ibtida_top.scala 211:36]
+  assign gpio_io_tl_i_a_data = tl_switch_1to2_io_tl_d_o_1_a_data; // @[Ibtida_top.scala 211:36]
+  assign gpio_io_cio_gpio_i = io_gpio_i; // @[Ibtida_top.scala 277:36]
+  assign core_iccm_tl_host_io_req_i = core_io_instr_req_o; // @[Ibtida_top.scala 220:36]
+  assign core_iccm_tl_host_io_addr_i = core_io_instr_addr_o; // @[Ibtida_top.scala 221:36]
+  assign core_iccm_tl_host_io_we_i = 1'h0; // @[Ibtida_top.scala 222:36]
+  assign core_iccm_tl_host_io_wdata_i = 32'h0; // @[Ibtida_top.scala 223:36]
+  assign core_iccm_tl_host_io_be_i = 4'hf; // @[Ibtida_top.scala 224:36]
+  assign core_iccm_tl_host_io_tl_i_d_valid = iccm_tl_device_io_tl_o_d_valid; // @[Ibtida_top.scala 227:36]
+  assign core_iccm_tl_host_io_tl_i_d_data = iccm_tl_device_io_tl_o_d_data; // @[Ibtida_top.scala 227:36]
+  assign core_iccm_tl_host_io_tl_i_a_ready = 1'h1; // @[Ibtida_top.scala 227:36]
+  assign core_loadStore_tl_host_io_req_i = core_io_data_req_o; // @[Ibtida_top.scala 248:36]
+  assign core_loadStore_tl_host_io_addr_i = core_io_data_addr_o; // @[Ibtida_top.scala 249:36]
+  assign core_loadStore_tl_host_io_we_i = core_io_data_we_o; // @[Ibtida_top.scala 250:36]
+  assign core_loadStore_tl_host_io_wdata_i = {_T_23,_T_22}; // @[Ibtida_top.scala 251:36]
+  assign core_loadStore_tl_host_io_be_i = {_T_26,_T_25}; // @[Ibtida_top.scala 252:36]
+  assign core_loadStore_tl_host_io_tl_i_d_valid = tl_switch_1to2_io_tl_h_o_d_valid; // @[Ibtida_top.scala 197:36]
+  assign core_loadStore_tl_host_io_tl_i_d_data = tl_switch_1to2_io_tl_h_o_d_data; // @[Ibtida_top.scala 197:36]
+  assign core_loadStore_tl_host_io_tl_i_a_ready = tl_switch_1to2_io_tl_h_o_a_ready; // @[Ibtida_top.scala 197:36]
   assign iccm_tl_device_clock = clock;
   assign iccm_tl_device_reset = reset;
-  assign iccm_tl_device_io_tl_i_a_valid = core_iccm_tl_host_io_tl_o_a_valid; // @[Ibtida_top.scala 225:36]
-  assign iccm_tl_device_io_tl_i_a_opcode = core_iccm_tl_host_io_tl_o_a_opcode; // @[Ibtida_top.scala 225:36]
-  assign iccm_tl_device_io_tl_i_a_address = core_iccm_tl_host_io_tl_o_a_address; // @[Ibtida_top.scala 225:36]
-  assign iccm_tl_device_io_tl_i_a_mask = core_iccm_tl_host_io_tl_o_a_mask; // @[Ibtida_top.scala 225:36]
-  assign iccm_tl_device_io_rdata_i = io_iccm_rdata_i; // @[Ibtida_top.scala 238:36]
+  assign iccm_tl_device_io_tl_i_a_valid = core_iccm_tl_host_io_tl_o_a_valid; // @[Ibtida_top.scala 226:36]
+  assign iccm_tl_device_io_tl_i_a_opcode = core_iccm_tl_host_io_tl_o_a_opcode; // @[Ibtida_top.scala 226:36]
+  assign iccm_tl_device_io_tl_i_a_address = core_iccm_tl_host_io_tl_o_a_address; // @[Ibtida_top.scala 226:36]
+  assign iccm_tl_device_io_tl_i_a_mask = core_iccm_tl_host_io_tl_o_a_mask; // @[Ibtida_top.scala 226:36]
+  assign iccm_tl_device_io_rdata_i = io_iccm_rdata_i; // @[Ibtida_top.scala 239:36]
   assign dccm_tl_device_clock = clock;
   assign dccm_tl_device_reset = reset;
-  assign dccm_tl_device_io_tl_i_a_valid = tl_switch_1to2_io_tl_d_o_0_a_valid; // @[Ibtida_top.scala 201:36]
-  assign dccm_tl_device_io_tl_i_a_opcode = tl_switch_1to2_io_tl_d_o_0_a_opcode; // @[Ibtida_top.scala 201:36]
-  assign dccm_tl_device_io_tl_i_a_address = tl_switch_1to2_io_tl_d_o_0_a_address; // @[Ibtida_top.scala 201:36]
-  assign dccm_tl_device_io_tl_i_a_mask = tl_switch_1to2_io_tl_d_o_0_a_mask; // @[Ibtida_top.scala 201:36]
-  assign dccm_tl_device_io_tl_i_a_data = tl_switch_1to2_io_tl_d_o_0_a_data; // @[Ibtida_top.scala 201:36]
-  assign dccm_tl_device_io_rdata_i = {{28'd0}, _T_35}; // @[Ibtida_top.scala 257:36]
+  assign dccm_tl_device_io_tl_i_a_valid = tl_switch_1to2_io_tl_d_o_0_a_valid; // @[Ibtida_top.scala 202:36]
+  assign dccm_tl_device_io_tl_i_a_opcode = tl_switch_1to2_io_tl_d_o_0_a_opcode; // @[Ibtida_top.scala 202:36]
+  assign dccm_tl_device_io_tl_i_a_address = tl_switch_1to2_io_tl_d_o_0_a_address; // @[Ibtida_top.scala 202:36]
+  assign dccm_tl_device_io_tl_i_a_mask = tl_switch_1to2_io_tl_d_o_0_a_mask; // @[Ibtida_top.scala 202:36]
+  assign dccm_tl_device_io_tl_i_a_data = tl_switch_1to2_io_tl_d_o_0_a_data; // @[Ibtida_top.scala 202:36]
+  assign dccm_tl_device_io_rdata_i = {{28'd0}, _T_34}; // @[Ibtida_top.scala 258:36]
   assign tl_switch_1to2_clock = clock;
   assign tl_switch_1to2_reset = reset;
-  assign tl_switch_1to2_io_tl_h_i_a_valid = core_loadStore_tl_host_io_tl_o_a_valid; // @[Ibtida_top.scala 192:36]
-  assign tl_switch_1to2_io_tl_h_i_a_opcode = core_loadStore_tl_host_io_tl_o_a_opcode; // @[Ibtida_top.scala 192:36]
-  assign tl_switch_1to2_io_tl_h_i_a_address = core_loadStore_tl_host_io_tl_o_a_address; // @[Ibtida_top.scala 192:36]
-  assign tl_switch_1to2_io_tl_h_i_a_mask = core_loadStore_tl_host_io_tl_o_a_mask; // @[Ibtida_top.scala 192:36]
-  assign tl_switch_1to2_io_tl_h_i_a_data = core_loadStore_tl_host_io_tl_o_a_data; // @[Ibtida_top.scala 192:36]
-  assign tl_switch_1to2_io_tl_d_i_0_d_valid = dccm_tl_device_io_tl_o_d_valid; // @[Ibtida_top.scala 205:36]
-  assign tl_switch_1to2_io_tl_d_i_0_d_data = dccm_tl_device_io_tl_o_d_data; // @[Ibtida_top.scala 205:36]
-  assign tl_switch_1to2_io_tl_d_i_0_a_ready = dccm_tl_device_io_tl_o_a_ready; // @[Ibtida_top.scala 205:36]
-  assign tl_switch_1to2_io_tl_d_i_1_d_valid = gpio_io_tl_o_d_valid; // @[Ibtida_top.scala 214:36]
-  assign tl_switch_1to2_io_tl_d_i_1_d_data = gpio_io_tl_o_d_data; // @[Ibtida_top.scala 214:36]
-  assign tl_switch_1to2_io_tl_d_i_1_a_ready = gpio_io_tl_o_a_ready; // @[Ibtida_top.scala 214:36]
-  assign tl_switch_1to2_io_dev_sel = _T_14 ? 2'h1 : _GEN_26; // @[Ibtida_top.scala 188:36]
+  assign tl_switch_1to2_io_tl_h_i_a_valid = core_loadStore_tl_host_io_tl_o_a_valid; // @[Ibtida_top.scala 193:36]
+  assign tl_switch_1to2_io_tl_h_i_a_opcode = core_loadStore_tl_host_io_tl_o_a_opcode; // @[Ibtida_top.scala 193:36]
+  assign tl_switch_1to2_io_tl_h_i_a_address = core_loadStore_tl_host_io_tl_o_a_address; // @[Ibtida_top.scala 193:36]
+  assign tl_switch_1to2_io_tl_h_i_a_mask = core_loadStore_tl_host_io_tl_o_a_mask; // @[Ibtida_top.scala 193:36]
+  assign tl_switch_1to2_io_tl_h_i_a_data = core_loadStore_tl_host_io_tl_o_a_data; // @[Ibtida_top.scala 193:36]
+  assign tl_switch_1to2_io_tl_d_i_0_d_valid = dccm_tl_device_io_tl_o_d_valid; // @[Ibtida_top.scala 206:36]
+  assign tl_switch_1to2_io_tl_d_i_0_d_data = dccm_tl_device_io_tl_o_d_data; // @[Ibtida_top.scala 206:36]
+  assign tl_switch_1to2_io_tl_d_i_0_a_ready = dccm_tl_device_io_tl_o_a_ready; // @[Ibtida_top.scala 206:36]
+  assign tl_switch_1to2_io_tl_d_i_1_d_valid = gpio_io_tl_o_d_valid; // @[Ibtida_top.scala 215:36]
+  assign tl_switch_1to2_io_tl_d_i_1_d_data = gpio_io_tl_o_d_data; // @[Ibtida_top.scala 215:36]
+  assign tl_switch_1to2_io_tl_d_i_1_a_ready = gpio_io_tl_o_a_ready; // @[Ibtida_top.scala 215:36]
+  assign tl_switch_1to2_io_dev_sel = _T_13 ? 2'h1 : _GEN_26; // @[Ibtida_top.scala 189:36]
 `ifdef RANDOMIZE_GARBAGE_ASSIGN
 `define RANDOMIZE
 `endif
@@ -8575,7 +8574,7 @@ end // initial
       rx_addr_reg <= 32'h0;
     end else if (!(_T_1)) begin
       if (_T_6) begin
-        rx_addr_reg <= {{16'd0}, _T_9};
+        rx_addr_reg <= {{18'd0}, _T_8};
       end
     end
     reset_reg <= reset;
@@ -8595,13 +8594,13 @@ end // initial
       end else begin
         state_reg <= 2'h1;
       end
-    end else if (_T_10) begin
+    end else if (_T_9) begin
       if (uart_ctrl_io_done) begin
         state_reg <= 2'h3;
       end else begin
         state_reg <= 2'h1;
       end
-    end else if (_T_11) begin
+    end else if (_T_10) begin
       state_reg <= 2'h0;
     end
   end
@@ -8612,7 +8611,7 @@ module InstMem(
   input         io_we_i_1,
   input         io_we_i_2,
   input         io_we_i_3,
-  input  [7:0]  io_addr_i,
+  input  [5:0]  io_addr_i,
   input  [31:0] io_wdata_i,
   output [31:0] io_rdata_o
 );
@@ -8622,23 +8621,23 @@ module InstMem(
 `ifdef RANDOMIZE_REG_INIT
   reg [31:0] _RAND_1;
 `endif // RANDOMIZE_REG_INIT
-  reg [31:0] mem [0:255]; // @[InstMem.scala 16:24]
-  wire [31:0] mem__T_data; // @[InstMem.scala 16:24]
-  wire [7:0] mem__T_addr; // @[InstMem.scala 16:24]
-  wire [31:0] mem__T_9_data; // @[InstMem.scala 16:24]
-  wire [7:0] mem__T_9_addr; // @[InstMem.scala 16:24]
-  wire  mem__T_9_mask; // @[InstMem.scala 16:24]
-  wire  mem__T_9_en; // @[InstMem.scala 16:24]
-  reg [7:0] mem__T_addr_pipe_0;
-  wire  _T_6 = io_we_i_0 & io_we_i_1; // @[InstMem.scala 24:24]
-  wire  _T_7 = _T_6 & io_we_i_2; // @[InstMem.scala 24:24]
+  reg [31:0] mem [0:63]; // @[InstMem.scala 15:24]
+  wire [31:0] mem__T_data; // @[InstMem.scala 15:24]
+  wire [5:0] mem__T_addr; // @[InstMem.scala 15:24]
+  wire [31:0] mem__T_9_data; // @[InstMem.scala 15:24]
+  wire [5:0] mem__T_9_addr; // @[InstMem.scala 15:24]
+  wire  mem__T_9_mask; // @[InstMem.scala 15:24]
+  wire  mem__T_9_en; // @[InstMem.scala 15:24]
+  reg [5:0] mem__T_addr_pipe_0;
+  wire  _T_6 = io_we_i_0 & io_we_i_1; // @[InstMem.scala 23:24]
+  wire  _T_7 = _T_6 & io_we_i_2; // @[InstMem.scala 23:24]
   assign mem__T_addr = mem__T_addr_pipe_0;
-  assign mem__T_data = mem[mem__T_addr]; // @[InstMem.scala 16:24]
+  assign mem__T_data = mem[mem__T_addr]; // @[InstMem.scala 15:24]
   assign mem__T_9_data = io_wdata_i;
   assign mem__T_9_addr = io_addr_i;
   assign mem__T_9_mask = 1'h1;
   assign mem__T_9_en = _T_7 & io_we_i_3;
-  assign io_rdata_o = mem__T_data; // @[InstMem.scala 23:16]
+  assign io_rdata_o = mem__T_data; // @[InstMem.scala 22:16]
 `ifdef RANDOMIZE_GARBAGE_ASSIGN
 `define RANDOMIZE
 `endif
@@ -8675,12 +8674,12 @@ initial begin
     `endif
 `ifdef RANDOMIZE_MEM_INIT
   _RAND_0 = {1{`RANDOM}};
-  for (initvar = 0; initvar < 256; initvar = initvar+1)
+  for (initvar = 0; initvar < 64; initvar = initvar+1)
     mem[initvar] = _RAND_0[31:0];
 `endif // RANDOMIZE_MEM_INIT
 `ifdef RANDOMIZE_REG_INIT
   _RAND_1 = {1{`RANDOM}};
-  mem__T_addr_pipe_0 = _RAND_1[7:0];
+  mem__T_addr_pipe_0 = _RAND_1[5:0];
 `endif // RANDOMIZE_REG_INIT
   `endif // RANDOMIZE
 end // initial
@@ -8690,7 +8689,7 @@ end // initial
 `endif // SYNTHESIS
   always @(posedge clock) begin
     if(mem__T_9_en & mem__T_9_mask) begin
-      mem[mem__T_9_addr] <= mem__T_9_data; // @[InstMem.scala 16:24]
+      mem[mem__T_9_addr] <= mem__T_9_data; // @[InstMem.scala 15:24]
     end
     mem__T_addr_pipe_0 <= io_addr_i;
   end
@@ -8701,7 +8700,7 @@ module DataMem(
   input        io_we_i_1,
   input        io_we_i_2,
   input        io_we_i_3,
-  input  [7:0] io_addr_i,
+  input  [5:0] io_addr_i,
   input  [7:0] io_wdata_i_0,
   input  [7:0] io_wdata_i_1,
   input  [7:0] io_wdata_i_2,
@@ -8723,38 +8722,38 @@ module DataMem(
   reg [31:0] _RAND_5;
   reg [31:0] _RAND_7;
 `endif // RANDOMIZE_REG_INIT
-  reg [7:0] mem_0 [0:255]; // @[DataMem.scala 15:24]
+  reg [7:0] mem_0 [0:63]; // @[DataMem.scala 15:24]
   wire [7:0] mem_0__T_data; // @[DataMem.scala 15:24]
-  wire [7:0] mem_0__T_addr; // @[DataMem.scala 15:24]
+  wire [5:0] mem_0__T_addr; // @[DataMem.scala 15:24]
   wire [7:0] mem_0__T_10_data; // @[DataMem.scala 15:24]
-  wire [7:0] mem_0__T_10_addr; // @[DataMem.scala 15:24]
+  wire [5:0] mem_0__T_10_addr; // @[DataMem.scala 15:24]
   wire  mem_0__T_10_mask; // @[DataMem.scala 15:24]
   wire  mem_0__T_10_en; // @[DataMem.scala 15:24]
-  reg [7:0] mem_0__T_addr_pipe_0;
-  reg [7:0] mem_1 [0:255]; // @[DataMem.scala 15:24]
+  reg [5:0] mem_0__T_addr_pipe_0;
+  reg [7:0] mem_1 [0:63]; // @[DataMem.scala 15:24]
   wire [7:0] mem_1__T_data; // @[DataMem.scala 15:24]
-  wire [7:0] mem_1__T_addr; // @[DataMem.scala 15:24]
+  wire [5:0] mem_1__T_addr; // @[DataMem.scala 15:24]
   wire [7:0] mem_1__T_10_data; // @[DataMem.scala 15:24]
-  wire [7:0] mem_1__T_10_addr; // @[DataMem.scala 15:24]
+  wire [5:0] mem_1__T_10_addr; // @[DataMem.scala 15:24]
   wire  mem_1__T_10_mask; // @[DataMem.scala 15:24]
   wire  mem_1__T_10_en; // @[DataMem.scala 15:24]
-  reg [7:0] mem_1__T_addr_pipe_0;
-  reg [7:0] mem_2 [0:255]; // @[DataMem.scala 15:24]
+  reg [5:0] mem_1__T_addr_pipe_0;
+  reg [7:0] mem_2 [0:63]; // @[DataMem.scala 15:24]
   wire [7:0] mem_2__T_data; // @[DataMem.scala 15:24]
-  wire [7:0] mem_2__T_addr; // @[DataMem.scala 15:24]
+  wire [5:0] mem_2__T_addr; // @[DataMem.scala 15:24]
   wire [7:0] mem_2__T_10_data; // @[DataMem.scala 15:24]
-  wire [7:0] mem_2__T_10_addr; // @[DataMem.scala 15:24]
+  wire [5:0] mem_2__T_10_addr; // @[DataMem.scala 15:24]
   wire  mem_2__T_10_mask; // @[DataMem.scala 15:24]
   wire  mem_2__T_10_en; // @[DataMem.scala 15:24]
-  reg [7:0] mem_2__T_addr_pipe_0;
-  reg [7:0] mem_3 [0:255]; // @[DataMem.scala 15:24]
+  reg [5:0] mem_2__T_addr_pipe_0;
+  reg [7:0] mem_3 [0:63]; // @[DataMem.scala 15:24]
   wire [7:0] mem_3__T_data; // @[DataMem.scala 15:24]
-  wire [7:0] mem_3__T_addr; // @[DataMem.scala 15:24]
+  wire [5:0] mem_3__T_addr; // @[DataMem.scala 15:24]
   wire [7:0] mem_3__T_10_data; // @[DataMem.scala 15:24]
-  wire [7:0] mem_3__T_10_addr; // @[DataMem.scala 15:24]
+  wire [5:0] mem_3__T_10_addr; // @[DataMem.scala 15:24]
   wire  mem_3__T_10_mask; // @[DataMem.scala 15:24]
   wire  mem_3__T_10_en; // @[DataMem.scala 15:24]
-  reg [7:0] mem_3__T_addr_pipe_0;
+  reg [5:0] mem_3__T_addr_pipe_0;
   wire  _T_6 = io_we_i_0 | io_we_i_1; // @[DataMem.scala 18:26]
   wire  _T_7 = _T_6 | io_we_i_2; // @[DataMem.scala 18:26]
   assign mem_0__T_addr = mem_0__T_addr_pipe_0;
@@ -8821,27 +8820,27 @@ initial begin
     `endif
 `ifdef RANDOMIZE_MEM_INIT
   _RAND_0 = {1{`RANDOM}};
-  for (initvar = 0; initvar < 256; initvar = initvar+1)
+  for (initvar = 0; initvar < 64; initvar = initvar+1)
     mem_0[initvar] = _RAND_0[7:0];
   _RAND_2 = {1{`RANDOM}};
-  for (initvar = 0; initvar < 256; initvar = initvar+1)
+  for (initvar = 0; initvar < 64; initvar = initvar+1)
     mem_1[initvar] = _RAND_2[7:0];
   _RAND_4 = {1{`RANDOM}};
-  for (initvar = 0; initvar < 256; initvar = initvar+1)
+  for (initvar = 0; initvar < 64; initvar = initvar+1)
     mem_2[initvar] = _RAND_4[7:0];
   _RAND_6 = {1{`RANDOM}};
-  for (initvar = 0; initvar < 256; initvar = initvar+1)
+  for (initvar = 0; initvar < 64; initvar = initvar+1)
     mem_3[initvar] = _RAND_6[7:0];
 `endif // RANDOMIZE_MEM_INIT
 `ifdef RANDOMIZE_REG_INIT
   _RAND_1 = {1{`RANDOM}};
-  mem_0__T_addr_pipe_0 = _RAND_1[7:0];
+  mem_0__T_addr_pipe_0 = _RAND_1[5:0];
   _RAND_3 = {1{`RANDOM}};
-  mem_1__T_addr_pipe_0 = _RAND_3[7:0];
+  mem_1__T_addr_pipe_0 = _RAND_3[5:0];
   _RAND_5 = {1{`RANDOM}};
-  mem_2__T_addr_pipe_0 = _RAND_5[7:0];
+  mem_2__T_addr_pipe_0 = _RAND_5[5:0];
   _RAND_7 = {1{`RANDOM}};
-  mem_3__T_addr_pipe_0 = _RAND_7[7:0];
+  mem_3__T_addr_pipe_0 = _RAND_7[5:0];
 `endif // RANDOMIZE_REG_INIT
   `endif // RANDOMIZE
 end // initial
@@ -8901,7 +8900,7 @@ module Ibtida_top_dffram_cv(
   wire  iccm_io_we_i_1; // @[Ibtida_top_dffram_cv.scala 15:25]
   wire  iccm_io_we_i_2; // @[Ibtida_top_dffram_cv.scala 15:25]
   wire  iccm_io_we_i_3; // @[Ibtida_top_dffram_cv.scala 15:25]
-  wire [7:0] iccm_io_addr_i; // @[Ibtida_top_dffram_cv.scala 15:25]
+  wire [5:0] iccm_io_addr_i; // @[Ibtida_top_dffram_cv.scala 15:25]
   wire [31:0] iccm_io_wdata_i; // @[Ibtida_top_dffram_cv.scala 15:25]
   wire [31:0] iccm_io_rdata_o; // @[Ibtida_top_dffram_cv.scala 15:25]
   wire  dccm_clock; // @[Ibtida_top_dffram_cv.scala 16:25]
@@ -8909,7 +8908,7 @@ module Ibtida_top_dffram_cv(
   wire  dccm_io_we_i_1; // @[Ibtida_top_dffram_cv.scala 16:25]
   wire  dccm_io_we_i_2; // @[Ibtida_top_dffram_cv.scala 16:25]
   wire  dccm_io_we_i_3; // @[Ibtida_top_dffram_cv.scala 16:25]
-  wire [7:0] dccm_io_addr_i; // @[Ibtida_top_dffram_cv.scala 16:25]
+  wire [5:0] dccm_io_addr_i; // @[Ibtida_top_dffram_cv.scala 16:25]
   wire [7:0] dccm_io_wdata_i_0; // @[Ibtida_top_dffram_cv.scala 16:25]
   wire [7:0] dccm_io_wdata_i_1; // @[Ibtida_top_dffram_cv.scala 16:25]
   wire [7:0] dccm_io_wdata_i_2; // @[Ibtida_top_dffram_cv.scala 16:25]
@@ -8942,85 +8941,32 @@ module Ibtida_top_dffram_cv(
     .io_dccm_addr_o(ibtidaTop_io_dccm_addr_o),
     .io_dccm_rdata_i(ibtidaTop_io_dccm_rdata_i)
   );
-
-  // dffram for data memory
-
-  reg [31:0] RAM_DCCM[(256*1)-1 : 0];
-  reg [31:0] RAM_DCCM_DATA;
-  wire [3:0] WE_DCCM;
-  wire EN = 1'b1;
-  wire [31:0] DCCM_di;
-  wire [7:0] DCCM_A;
-
-  assign DCCM_A = dccm_io_addr_i;
-  assign DCCM_di = {dccm_io_wdata_i_3, dccm_io_wdata_i_2, dccm_io_wdata_i_1, dccm_io_wdata_i_0};
-  assign WE_DCCM = {dccm_io_we_i_3, dccm_io_we_i_2, dccm_io_we_i_1, dccm_io_we_i_0};
-
-  always @(posedge dccm_clock) begin
-    if(EN) begin
-      RAM_DCCM_DATA <= RAM_DCCM[DCCM_A/4];
-      if(WE_DCCM[0]) RAM_DCCM[DCCM_A/4][ 7: 0] <= DCCM_di[7:0];
-      if(WE_DCCM[1]) RAM_DCCM[DCCM_A/4][15: 8] <= DCCM_di[15:8];
-      if(WE_DCCM[2]) RAM_DCCM[DCCM_A/4][23:16] <= DCCM_di[23:16];
-      if(WE_DCCM[3]) RAM_DCCM[DCCM_A/4][31:24] <= DCCM_di[31:24];
-    end
-  end
-
-  assign dccm_io_rdata_o_3 = RAM_DCCM_DATA[31:24];
-  assign dccm_io_rdata_o_2 = RAM_DCCM_DATA[23:16];
-  assign dccm_io_rdata_o_1 = RAM_DCCM_DATA[15:8];
-  assign dccm_io_rdata_o_0 = RAM_DCCM_DATA[7:0];
-
-
-  // dffram for instruction memory
-  reg [31:0] RAM_ICCM[(256*1)-1 : 0];
-  reg [31:0] RAM_ICCM_DATA;
-  wire [3:0] WE_ICCM;
-  wire [31:0] ICCM_di;
-  wire [7:0] ICCM_A;
-
-  assign ICCM_A = iccm_io_addr_i;
-  assign ICCM_di = iccm_io_wdata_i;
-  assign WE_ICCM = {iccm_io_we_i_3, iccm_io_we_i_2, iccm_io_we_i_1, iccm_io_we_i_0};
-
-  always @(posedge iccm_clock) begin
-    if(EN) begin
-      RAM_ICCM_DATA <= RAM_ICCM[ICCM_A/4];
-      if(WE_ICCM[0]) RAM_ICCM[ICCM_A/4][ 7: 0] <= ICCM_di[7:0];
-      if(WE_ICCM[1]) RAM_ICCM[ICCM_A/4][15: 8] <= ICCM_di[15:8];
-      if(WE_ICCM[2]) RAM_ICCM[ICCM_A/4][23:16] <= ICCM_di[23:16];
-      if(WE_ICCM[3]) RAM_ICCM[ICCM_A/4][31:24] <= ICCM_di[31:24];
-    end
-  end
-
-  assign iccm_io_rdata_o = RAM_ICCM_DATA;
-
-  // InstMem iccm ( // @[Ibtida_top_dffram_cv.scala 15:25]
-  //   .clock(iccm_clock),
-  //   .io_we_i_0(iccm_io_we_i_0),
-  //   .io_we_i_1(iccm_io_we_i_1),
-  //   .io_we_i_2(iccm_io_we_i_2),
-  //   .io_we_i_3(iccm_io_we_i_3),
-  //   .io_addr_i(iccm_io_addr_i),
-  //   .io_wdata_i(iccm_io_wdata_i),
-  //   .io_rdata_o(iccm_io_rdata_o)
-  // );
-  // DataMem dccm ( // @[Ibtida_top_dffram_cv.scala 16:25]
-  //   .clock(dccm_clock),
-  //   .io_we_i_0(dccm_io_we_i_0),
-  //   .io_we_i_1(dccm_io_we_i_1),
-  //   .io_we_i_2(dccm_io_we_i_2),
-  //   .io_we_i_3(dccm_io_we_i_3),
-  //   .io_addr_i(dccm_io_addr_i),
-  //   .io_wdata_i_0(dccm_io_wdata_i_0),
-  //   .io_wdata_i_1(dccm_io_wdata_i_1),
-  //   .io_wdata_i_2(dccm_io_wdata_i_2),
-  //   .io_wdata_i_3(dccm_io_wdata_i_3),
-  //   .io_rdata_o_0(dccm_io_rdata_o_0),
-  //   .io_rdata_o_1(dccm_io_rdata_o_1),
-  //   .io_rdata_o_2(dccm_io_rdata_o_2),
-  //   .io_rdata_o_3(dccm_io_rdata_o_3)
-  // );
+  InstMem iccm ( // @[Ibtida_top_dffram_cv.scala 15:25]
+    .clock(iccm_clock),
+    .io_we_i_0(iccm_io_we_i_0),
+    .io_we_i_1(iccm_io_we_i_1),
+    .io_we_i_2(iccm_io_we_i_2),
+    .io_we_i_3(iccm_io_we_i_3),
+    .io_addr_i(iccm_io_addr_i),
+    .io_wdata_i(iccm_io_wdata_i),
+    .io_rdata_o(iccm_io_rdata_o)
+  );
+  DataMem dccm ( // @[Ibtida_top_dffram_cv.scala 16:25]
+    .clock(dccm_clock),
+    .io_we_i_0(dccm_io_we_i_0),
+    .io_we_i_1(dccm_io_we_i_1),
+    .io_we_i_2(dccm_io_we_i_2),
+    .io_we_i_3(dccm_io_we_i_3),
+    .io_addr_i(dccm_io_addr_i),
+    .io_wdata_i_0(dccm_io_wdata_i_0),
+    .io_wdata_i_1(dccm_io_wdata_i_1),
+    .io_wdata_i_2(dccm_io_wdata_i_2),
+    .io_wdata_i_3(dccm_io_wdata_i_3),
+    .io_rdata_o_0(dccm_io_rdata_o_0),
+    .io_rdata_o_1(dccm_io_rdata_o_1),
+    .io_rdata_o_2(dccm_io_rdata_o_2),
+    .io_rdata_o_3(dccm_io_rdata_o_3)
+  );
   assign io_gpio_o = ibtidaTop_io_gpio_o[29:0]; // @[Ibtida_top_dffram_cv.scala 21:13]
   assign io_gpio_en_o = ibtidaTop_io_gpio_en_o[29:0]; // @[Ibtida_top_dffram_cv.scala 22:16]
   assign ibtidaTop_clock = clock;
@@ -9034,14 +8980,14 @@ module Ibtida_top_dffram_cv(
   assign iccm_io_we_i_1 = ibtidaTop_io_iccm_we_o_1; // @[Ibtida_top_dffram_cv.scala 26:16]
   assign iccm_io_we_i_2 = ibtidaTop_io_iccm_we_o_2; // @[Ibtida_top_dffram_cv.scala 26:16]
   assign iccm_io_we_i_3 = ibtidaTop_io_iccm_we_o_3; // @[Ibtida_top_dffram_cv.scala 26:16]
-  assign iccm_io_addr_i = ibtidaTop_io_iccm_addr_o; // @[Ibtida_top_dffram_cv.scala 27:18]
+  assign iccm_io_addr_i = ibtidaTop_io_iccm_addr_o[5:0]; // @[Ibtida_top_dffram_cv.scala 27:18]
   assign iccm_io_wdata_i = ibtidaTop_io_iccm_wdata_o; // @[Ibtida_top_dffram_cv.scala 28:19]
   assign dccm_clock = clock;
   assign dccm_io_we_i_0 = ibtidaTop_io_dccm_we_o_0; // @[Ibtida_top_dffram_cv.scala 33:16]
   assign dccm_io_we_i_1 = ibtidaTop_io_dccm_we_o_1; // @[Ibtida_top_dffram_cv.scala 33:16]
   assign dccm_io_we_i_2 = ibtidaTop_io_dccm_we_o_2; // @[Ibtida_top_dffram_cv.scala 33:16]
   assign dccm_io_we_i_3 = ibtidaTop_io_dccm_we_o_3; // @[Ibtida_top_dffram_cv.scala 33:16]
-  assign dccm_io_addr_i = ibtidaTop_io_dccm_addr_o; // @[Ibtida_top_dffram_cv.scala 34:18]
+  assign dccm_io_addr_i = ibtidaTop_io_dccm_addr_o[5:0]; // @[Ibtida_top_dffram_cv.scala 34:18]
   assign dccm_io_wdata_i_0 = ibtidaTop_io_dccm_wdata_o[7:0]; // @[Ibtida_top_dffram_cv.scala 35:36]
   assign dccm_io_wdata_i_1 = ibtidaTop_io_dccm_wdata_o[15:8]; // @[Ibtida_top_dffram_cv.scala 36:36]
   assign dccm_io_wdata_i_2 = ibtidaTop_io_dccm_wdata_o[23:16]; // @[Ibtida_top_dffram_cv.scala 37:36]
