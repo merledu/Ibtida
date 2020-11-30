@@ -34,8 +34,8 @@ class Ibtida_top(implicit val conf: TLConfiguration) extends Module {
   val gpio                          =       Module(new Gpio())
   val core_iccm_tl_host             =       Module(new TL_HostAdapter())
   val core_loadStore_tl_host        =       Module(new TL_HostAdapter())
-  val iccm_tl_device                =       Module(new TL_SramAdapter(sramAw = 8, sramDw = 32, forFetch = true.B))  // for 1 KB memory
-  val dccm_tl_device                =       Module(new TL_SramAdapter(sramAw = 8, sramDw = 32)) // for 1 KB memory
+  val iccm_tl_device                =       Module(new TL_SramAdapter(sramAw = 6, sramDw = 32, forFetch = true.B))  // for 64 words memory
+  val dccm_tl_device                =       Module(new TL_SramAdapter(sramAw = 6, sramDw = 32)) // for 64 words memory
   val tl_switch_1to2                =       Module(new TLSocket1_N(2))
 
   /** ||||||||||||||||||||||||||||||| INITIAL BOOT UP AFTER RESET ||||||||||||||||||||||||||||||| */
@@ -106,7 +106,8 @@ class Ibtida_top(implicit val conf: TLConfiguration) extends Module {
     // could be written inside it.
 
     rx_data_reg                    :=       Mux(uart_ctrl.io.valid, uart_ctrl.io.rx_data_o, 0.U)
-    rx_addr_reg                    :=       Mux(uart_ctrl.io.valid, uart_ctrl.io.addr_o << 2, 0.U)    // left shifting address by 2 since uart ctrl sends address in 0,1,2... format but we need it in word aligned so 1 translated to 4, 2 translates to 8 (dffram requirement)
+//    rx_addr_reg                    :=       Mux(uart_ctrl.io.valid, uart_ctrl.io.addr_o << 2, 0.U)    // left shifting address by 2 since uart ctrl sends address in 0,1,2... format but we need it in word aligned so 1 translated to 4, 2 translates to 8 (dffram requirement)
+    rx_addr_reg                    :=       Mux(uart_ctrl.io.valid, uart_ctrl.io.addr_o, 0.U)
 
   } .elsewhen(state_reg === write_iccm) {
     // when writing to the iccm state checking if the uart received the ending instruction. If it does then
