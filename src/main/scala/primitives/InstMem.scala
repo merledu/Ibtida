@@ -3,17 +3,16 @@ import chisel3._
 import scala.collection.script.Reset
 import chisel3.util.experimental.loadMemoryFromFile
 
-/** TODO: Have to make changes here to support DFFRAM memory interfaces */
 class InstMem extends Module {
   val io = IO(new Bundle{
     val en_i = Input(Bool())   // active high memory enable
     val we_i = Input(Vec(4,Bool()))    // active high write enable with masking
-    val addr_i = Input(UInt(8.W))
+    val addr_i = Input(UInt(6.W))
     val wdata_i = Input(UInt(32.W))
     val rdata_o = Output(UInt(32.W))
   })
 
-  val mem = SyncReadMem(256, UInt(32.W))
+  val mem = SyncReadMem(64, UInt(32.W))
 
 //  loadMemoryFromFile(mem,"/home/merl/Desktop/mem.txt")
 //
