@@ -1,41 +1,38 @@
 #include "verilated.h"
 #include <iostream>
 #include "VIbtida_top_dffram_cv.h"
-//#include "VShaheenTop.h"
 #include <fstream>
 #include <algorithm>
 #include <verilated_vcd_c.h>
+#include <math.h>
 
-#define NUM_CYCLES ((vluint64_t)5 * 80000)
+#define NUM_CYCLES ((vluint64_t)10000000)
 
 using namespace std;
 
-//VShaheenTop*top;
-VIbtida_top_dffram_cv*top;
-vluint16_t main_time = 0;
+VIbtida_top_dffram_cv *top;
 
 int main(int argc, char **argv, char **env)
 {
     top = new VIbtida_top_dffram_cv();
-    //top = new VShaheenTop();
     Verilated::commandArgs(argc, argv);
 
     // Tracing
     Verilated::traceEverOn(true);
     VerilatedVcdC *tfp = new VerilatedVcdC;
     top->trace(tfp, 99); // Trace 99 levels of hierarchy
-    tfp->spTrace()->set_time_resolution("1 ps");
+    //tfp->spTrace()->set_time_resolution("1 ps");
     tfp->open("obj_dir/sim.vcd");
 
     top->reset = 1;
-    //top->io_gpio_i = 0;
+    top->io_gpio_i = 0;
 
     cout << "Starting simulation" << endl;
 
     // Reading file and counting number of lines
     ifstream file;
     string ins;
-    file.open("/home/hadirkhan10/Desktop/Ibtida/verilator/instructions.txt");
+    file.open("/home/usman/Documents/instructions.txt");
     int totalLines = count(istreambuf_iterator<char>(file), istreambuf_iterator<char>(), '\n');
     file.clear();
     file.seekg(0, file.beg);
@@ -48,6 +45,15 @@ int main(int argc, char **argv, char **env)
     int counter = 0;
     int bit = 0;
     vluint64_t hcycle;
+
+    // Set frequency and baudrate
+    long int frequency = 10000000;
+    long int baudrate = 9600;
+
+    int clk_bit = (frequency / baudrate);
+
+    //Pass clk_bit to top module
+    top->io_CLK_PER_BIT = ceil(clk_bit);
 
     // converting instructions to byte
     while (getline(file, ins))
@@ -74,7 +80,7 @@ int main(int argc, char **argv, char **env)
     }
 
     // simulation loop
-    for (hcycle = 0; hcycle < hcycle < (NUM_CYCLES * 2);)
+    for (hcycle = 0; hcycle < (NUM_CYCLES * 2);)
     {
         // toggle clock
         top->clock = top->clock ? 0 : 1;
@@ -84,9 +90,9 @@ int main(int argc, char **argv, char **env)
             top->reset = 0;
             top->io_rx_i = 1;
         }
-        else if (hcycle >= 1667 && hcycle % 1667 == 0)
+        // multiplying by 2 because verilator increments half cycle per loop
+        else if (hcycle >= clk_bit * 2) && hcycle % clk_bit * 2) == 0)
         {
-      //      top->io_gpio_i = 1;
             if (bit == 0)
             {
                 top->io_rx_i = 0; //start bit
@@ -113,7 +119,6 @@ int main(int argc, char **argv, char **env)
 
         if (tfp)
             tfp->dump(hcycle);
-        main_time++;
     }
     top->final();
     tfp->close();

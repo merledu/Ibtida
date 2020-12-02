@@ -9033,7 +9033,7 @@ module Ibtida_top_dffram_cv(
     .io_dccm_rdata_i(ibtidaTop_io_dccm_rdata_i)
   );
 
-  // dffram for data memory
+// dffram for data memory
 
   reg [31:0] RAM_DCCM[(64*1)-1 : 0];
   reg [31:0] RAM_DCCM_DATA;
@@ -9085,7 +9085,7 @@ module Ibtida_top_dffram_cv(
 
   assign iccm_io_rdata_o = RAM_ICCM_DATA;
 
-  // InstMem iccm ( // @[Ibtida_top_dffram_cv.scala 15:25]
+  // InstMem iccm ( // @[Ibtida_top_dffram_cv.scala 16:25]
   //   .clock(iccm_clock),
   //   .io_we_i_0(iccm_io_we_i_0),
   //   .io_we_i_1(iccm_io_we_i_1),
@@ -9095,7 +9095,7 @@ module Ibtida_top_dffram_cv(
   //   .io_wdata_i(iccm_io_wdata_i),
   //   .io_rdata_o(iccm_io_rdata_o)
   // );
-  // DataMem dccm ( // @[Ibtida_top_dffram_cv.scala 16:25]
+  // DataMem dccm ( // @[Ibtida_top_dffram_cv.scala 17:25]
   //   .clock(dccm_clock),
   //   .io_we_i_0(dccm_io_we_i_0),
   //   .io_we_i_1(dccm_io_we_i_1),
@@ -9111,9 +9111,8 @@ module Ibtida_top_dffram_cv(
   //   .io_rdata_o_2(dccm_io_rdata_o_2),
   //   .io_rdata_o_3(dccm_io_rdata_o_3)
   // );
-  assign io_gpio_o = ibtidaTop_io_gpio_o[29:0]; // @[Ibtida_top_dffram_cv.scala 21:13]
-  assign io_gpio_en_o = ibtidaTop_io_gpio_en_o[29:0]; // @[Ibtida_top_dffram_cv.scala 22:16]
-
+  assign io_gpio_o = ibtidaTop_io_gpio_o[29:0]; // @[Ibtida_top_dffram_cv.scala 23:13]
+  assign io_gpio_en_o = ibtidaTop_io_gpio_en_o[29:0]; // @[Ibtida_top_dffram_cv.scala 24:16]
   assign ibtidaTop_clock = clock;
   assign ibtidaTop_reset = reset;
   assign ibtidaTop_io_rx_i = io_rx_i; // @[Ibtida_top_dffram_cv.scala 20:21]
